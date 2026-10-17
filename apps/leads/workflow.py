@@ -1,0 +1,25 @@
+from .models import Lead
+from .permissions import is_admin
+
+S = Lead.Status
+TRANSITIONS = {
+    S.NEW: {S.ASSIGNED},
+    S.ASSIGNED: {S.CONTACTED, S.NO_RESPONSE, S.WRONG_NUMBER},
+    S.CONTACTED: {S.INTERESTED, S.NO_RESPONSE, S.WRONG_NUMBER, S.NOT_INTERESTED, S.NOT_ELIGIBLE},
+    S.INTERESTED: {S.COUNSELLING, S.NOT_INTERESTED, S.LOST},
+    S.COUNSELLING: {S.COURSE_SELECTED, S.NOT_ELIGIBLE, S.LOST},
+    S.COURSE_SELECTED: {S.APPLICATION_STARTED, S.LOST},
+    S.APPLICATION_STARTED: {S.APPLICATION_SUBMITTED, S.LOST},
+    S.APPLICATION_SUBMITTED: {S.PAYMENT_PENDING, S.ADMISSION_CONFIRMED, S.LOST},
+    S.PAYMENT_PENDING: {S.ADMISSION_CONFIRMED, S.LOST},
+    S.NO_RESPONSE: {S.CONTACTED, S.LOST},
+    S.WRONG_NUMBER: {S.CONTACTED, S.LOST},
+    S.NOT_INTERESTED: {S.CONTACTED, S.LOST},
+    S.NOT_ELIGIBLE: {S.CONTACTED, S.LOST},
+    S.LOST: set(), S.ADMISSION_CONFIRMED: set(),
+}
+
+
+def allowed_statuses(user, lead):
+    allowed = set(S.values) if is_admin(user) else TRANSITIONS.get(lead.status, set())
+    return [(value, label) for value, label in S.choices if value in allowed and value != lead.status]

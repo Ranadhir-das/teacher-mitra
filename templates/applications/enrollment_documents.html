@@ -1,0 +1,138 @@
+<section class="panel mb-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="mb-0">Documents</h2>
+        {% if application.lead.is_active %}
+            <a class="btn btn-sm btn-primary" href="{% url 'documents:application-create' application.pk %}">+ Add / request document</a>
+        {% endif %}
+    </div>
+
+    <div class="table-responsive">
+        <table class="table align-middle">
+            <thead>
+                <tr>
+                    <th>Document</th>
+                    <th>Type</th>
+                    <th>Status</th>
+                    <th>Review</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for document in documents %}
+                <tr>
+                    <td>
+                        <a class="employee-name" href="{% url 'documents:detail' document.pk %}">{{ document.title }}</a>
+                    </td>
+                    <td>{{ document.get_document_type_display }}</td>
+                    <td>
+                        <span class="soft-badge {% if document.deleted_at or document.status == 'REJECTED' %}neutral{% endif %}">
+                            {% if document.deleted_at %}Deleted{% else %}{{ document.get_status_display }}{% endif %}
+                        </span>
+                    </td>
+                    <td>
+                        {{ document.reviewed_by.name|default:'Not reviewed' }}
+                        {% if document.rejection_reason %}
+                            <small class="d-block text-danger">{{ document.rejection_reason }}</small>
+                        {% endif %}
+                    </td>
+                    <td class="text-end">
+                        <a class="btn btn-sm btn-outline-primary" href="{% url 'documents:detail' document.pk %}">View &rarr;</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5">
+                        <div class="empty-state py-4">
+                            <p class="mb-0">No documents yet.</p>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<section class="panel mb-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="mb-0">Admission / Enrollment</h2>
+        {% if application.lead.is_active %}
+            <a class="btn btn-sm btn-primary" href="{% url 'applications:admission-edit' application.pk %}">
+                {% if admission %}Manage admission{% else %}+ Create admission{% endif %}
+            </a>
+        {% endif %}
+    </div>
+
+    {% if admission %}
+        <dl class="detail-grid">
+            <div>
+                <dt>Enrollment number</dt>
+                <dd>{{ admission.enrollment_number|default:'Pending' }}</dd>
+            </div>
+            <div>
+                <dt>Status</dt>
+                <dd>
+                    <span class="soft-badge">{{ admission.get_status_display }}</span>
+                </dd>
+            </div>
+            <div>
+                <dt>Admission date</dt>
+                <dd>{{ admission.admission_date|date:'d M Y'|default:'Pending' }}</dd>
+            </div>
+            <div>
+                <dt>Payment</dt>
+                <dd>{{ admission.get_payment_status_display }}</dd>
+            </div>
+        </dl>
+        {% if admission.remarks %}
+            <p class="mt-3">{{ admission.remarks|linebreaksbr }}</p>
+        {% endif %}
+        {% if admission.confirmed_at %}
+            <small class="text-muted d-block mt-2">Confirmed by {{ admission.confirmed_by.name }} on {{ admission.confirmed_at|date:'d M Y, H:i' }}</small>
+        {% endif %}
+    {% else %}
+        <p class="text-secondary mb-0">No admission recorded yet.</p>
+    {% endif %}
+</section>
+
+<section class="panel mb-4">
+    <h2>Document activity</h2>
+    <div class="timeline mt-3">
+        {% for event in document_history %}
+        <article class="mb-3">
+            <strong>
+                <a href="{% url 'documents:detail' event.document_id %}">{{ event.document.title }}</a>: {{ event.action }}
+            </strong>
+            <p>{{ event.get_previous_status_display|default:'New' }} &rarr; {{ event.get_new_status_display }} &middot; {{ event.actor.name }} &middot; {{ event.created_at|date:'d M Y, H:i' }}</p>
+            <dl>
+                {% for key, value in event.details.items %}
+                    <dt>{{ key }}</dt>
+                    <dd>{{ value|linebreaksbr }}</dd>
+                {% endfor %}
+            </dl>
+        </article>
+        {% empty %}
+        <p class="text-secondary">No document activity yet.</p>
+        {% endfor %}
+    </div>
+</section>
+
+<section class="panel mb-4">
+    <h2>Admission history</h2>
+    <div class="timeline mt-3">
+        {% for event in admission_history %}
+        <article class="mb-3">
+            <strong>{{ event.get_previous_status_display|default:'New' }} &rarr; {{ event.get_new_status_display }}</strong>
+            <p>{{ event.actor.name }} &middot; {{ event.created_at|date:'d M Y, H:i' }}</p>
+            <dl>
+                {% for key, values in event.changes.items %}
+                    <dt>{{ key }}</dt>
+                    <dd>{{ values.before|default:'Empty'|linebreaksbr }} &rarr; {{ values.after|default:'Empty'|linebreaksbr }}</dd>
+                {% endfor %}
+            </dl>
+        </article>
+        {% empty %}
+        <p class="text-secondary">No admission history yet.</p>
+        {% endfor %}
+    </div>
+</section>

@@ -1,0 +1,385 @@
+{% extends "base.html" %}
+
+{% block title %}Follow-ups{% endblock %}
+
+{% block content %}
+
+<div class="container py-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <span class="eyebrow">CRM ACTIVITY</span>
+            <h1 class="mb-1">Follow-ups</h1>
+            <p class="text-muted mb-0">
+                Manage scheduled, completed, missed and cancelled follow-ups.
+            </p>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <!-- Quick Filters -->
+    <div class="d-flex flex-wrap gap-2 mb-3">
+    
+        <a
+            href="?status={{ selected_status }}&type={{ selected_type }}&assigned_to={{ selected_assigned_to }}"
+            class="btn btn-sm {% if not quick_filter %}btn-primary{% else %}btn-outline-secondary{% endif %}"
+        >
+            All
+        </a>
+    
+        <a
+            href="?quick=today&status={{ selected_status }}&type={{ selected_type }}&assigned_to={{ selected_assigned_to }}"
+            class="btn btn-sm {% if quick_filter == 'today' %}btn-primary{% else %}btn-outline-secondary{% endif %}"
+        >
+            Today
+        </a>
+    
+        <a
+            href="?quick=upcoming&status={{ selected_status }}&type={{ selected_type }}&assigned_to={{ selected_assigned_to }}"
+            class="btn btn-sm {% if quick_filter == 'upcoming' %}btn-primary{% else %}btn-outline-secondary{% endif %}"
+        >
+            Upcoming
+        </a>
+    
+        <a
+            href="?quick=missed&status={{ selected_status }}&type={{ selected_type }}&assigned_to={{ selected_assigned_to }}"
+            class="btn btn-sm {% if quick_filter == 'missed' %}btn-primary{% else %}btn-outline-secondary{% endif %}"
+        >
+            Missed
+        </a>
+    
+        <a
+            href="?quick=completed&status={{ selected_status }}&type={{ selected_type }}&assigned_to={{ selected_assigned_to }}"
+            class="btn btn-sm {% if quick_filter == 'completed' %}btn-primary{% else %}btn-outline-secondary{% endif %}"
+        >
+            Completed
+        </a>
+    
+    </div>
+
+    <section class="panel mb-4">
+
+        <h2 class="mb-3">Filters</h2>
+
+        <form method="get">
+
+            <div class="row g-3">
+
+                <div class="col-md-4">
+
+                    <label class="form-label">
+                        Status
+                    </label>
+
+                    <select
+                        name="status"
+                        class="form-select"
+                    >
+
+                        <option value="">
+                            All statuses
+                        </option>
+
+                        {% for value, label in status_choices %}
+
+                            <option
+                                value="{{ value }}"
+                                {% if selected_status == value %}
+                                    selected
+                                {% endif %}
+                            >
+                                {{ label }}
+                            </option>
+
+                        {% endfor %}
+
+                    </select>
+
+                </div>
+
+                <div class="col-md-4">
+
+                    <label class="form-label">
+                        Follow-up Type
+                    </label>
+
+                    <select
+                        name="type"
+                        class="form-select"
+                    >
+
+                        <option value="">
+                            All types
+                        </option>
+
+                        {% for value, label in type_choices %}
+
+                            <option
+                                value="{{ value }}"
+                                {% if selected_type == value %}
+                                    selected
+                                {% endif %}
+                            >
+                                {{ label }}
+                            </option>
+
+                        {% endfor %}
+
+                    </select>
+
+                </div>
+
+                <div class="col-md-4">
+
+                    <label class="form-label">
+                        Assigned To
+                    </label>
+                
+                    <select
+                        name="assigned_to"
+                        class="form-select"
+                    >
+                
+                        <option value="">
+                            All users
+                        </option>
+                
+                        {% for user in users %}
+                
+                            <option
+                                value="{{ user.id }}"
+                                {% if selected_assigned_to == user.id|stringformat:"s" %}
+                                    selected
+                                {% endif %}
+                            >
+                                {{ user.name }}
+                                {% if user.role %}
+                                    — {{ user.get_role_display }}
+                                {% endif %}
+                            </option>
+                
+                        {% endfor %}
+                
+                    </select>
+                
+                </div>
+
+            </div>
+
+            <div class="d-flex gap-2 mt-3">
+
+                <button
+                    type="submit"
+                    class="btn btn-primary"
+                >
+                    Apply Filters
+                </button>
+
+                <a
+                    href="{% url 'followups:list' %}"
+                    class="btn btn-outline-secondary"
+                >
+                    Clear
+                </a>
+
+            </div>
+
+        </form>
+
+    </section>
+
+
+    <!-- Follow-up list -->
+    <section class="panel">
+
+        <div class="d-flex justify-content-between align-items-center mb-3">
+
+            <h2 class="mb-0">
+                Follow-up List
+            </h2>
+
+            <span class="soft-badge neutral">
+                {{ followups|length }} result{{ followups|length|pluralize }}
+            </span>
+
+        </div>
+
+
+        <div class="table-responsive">
+
+            <table class="table align-middle">
+
+                <thead>
+
+                    <tr>
+
+                        <th>Lead</th>
+                        <th>Type</th>
+                        <th>Scheduled</th>
+                        <th>Assigned To</th>
+                        <th>Status</th>
+                        <th class="text-end">Actions</th>
+
+                    </tr>
+
+                </thead>
+
+                <tbody>
+
+                    {% for followup in followups %}
+
+                    <tr>
+
+                        <td>
+
+                            <a
+                                href="{% url 'leads:detail' followup.lead.pk %}"
+                                class="fw-semibold"
+                            >
+                                {{ followup.lead.full_name }}
+                            </a>
+
+                            {% if followup.lead.phone %}
+
+                                <small class="text-muted d-block">
+                                    {{ followup.lead.phone }}
+                                </small>
+
+                            {% endif %}
+
+                        </td>
+
+
+                        <td>
+                            {{ followup.get_followup_type_display }}
+                        </td>
+
+
+                        <td>
+
+                            {{ followup.scheduled_at|date:"d M Y" }}
+
+                            <small class="text-muted d-block">
+                                {{ followup.scheduled_at|date:"H:i" }}
+                            </small>
+
+                        </td>
+
+
+                        <td>
+                            {{ followup.assigned_to.name }}
+                        </td>
+
+
+                        <td>
+
+                            {% if followup.status == "SCHEDULED" %}
+
+                                <span class="soft-badge">
+                                    Scheduled
+                                </span>
+
+                            {% elif followup.status == "COMPLETED" %}
+
+                                <span class="soft-badge">
+                                    Completed
+                                </span>
+
+                            {% elif followup.status == "MISSED" %}
+
+                                <span class="soft-badge">
+                                    Missed
+                                </span>
+
+                            {% elif followup.status == "CANCELLED" %}
+
+                                <span class="soft-badge neutral">
+                                    Cancelled
+                                </span>
+
+                            {% endif %}
+
+                        </td>
+
+
+                        <td class="text-end">
+
+                            <div class="d-flex justify-content-end gap-2">
+
+                                <a
+                                    href="{% url 'leads:detail' followup.lead.pk %}"
+                                    class="btn btn-sm btn-outline-secondary"
+                                >
+                                    Lead
+                                </a>
+
+
+                                {% if followup.status == "SCHEDULED" %}
+
+                                    <a
+                                        href="{% url 'followups:complete' followup.pk %}"
+                                        class="btn btn-sm btn-success"
+                                    >
+                                        Complete
+                                    </a>
+
+                                    <form
+                                        method="post"
+                                        action="{% url 'followups:cancel' followup.pk %}"
+                                        class="d-inline"
+                                    >
+
+                                        {% csrf_token %}
+
+                                        <button
+                                            type="submit"
+                                            class="btn btn-sm btn-outline-danger"
+                                            onclick="return confirm('Cancel this follow-up?');"
+                                        >
+                                            Cancel
+                                        </button>
+
+                                    </form>
+
+                                {% endif %}
+
+                            </div>
+
+                        </td>
+
+                    </tr>
+
+                    {% empty %}
+
+                    <tr>
+
+                        <td
+                            colspan="6"
+                            class="text-center py-5"
+                        >
+
+                            <p class="text-secondary mb-1">
+                                No follow-ups found.
+                            </p>
+
+                            <small class="text-muted">
+                                Try changing the filters or schedule a follow-up from a lead.
+                            </small>
+
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </section>
+
+</div>
+
+{% endblock %}

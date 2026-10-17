@@ -1,0 +1,775 @@
+{% extends 'partner_portal/base.html' %}
+
+{% block title %}Student Reports{% endblock %}
+
+{% block portal_content %}
+
+<div class="page-heading">
+    <div>
+        <span class="eyebrow">YOUR STUDENTS, IN FOCUS</span>
+
+        <h1>
+            <span aria-hidden="true">&#x1F4CA;</span>
+            Student Reports
+        </h1>
+
+        <p>
+            Track your students from enquiry to admission.
+            Includes archived students.
+        </p>
+    </div>
+
+    <a class="btn btn-primary" href="{% url 'partner-portal:submit' %}">
+        <span aria-hidden="true">&#x2795;</span>
+        Add Student
+    </a>
+</div>
+
+
+<!-- =========================================================
+     SUMMARY CARDS
+     ========================================================= -->
+
+<div class="metrics partner-report-metrics">
+
+    <div class="metric-card">
+        <span>Total Students</span>
+
+        <strong>{{ report_total }}</strong>
+
+        <small>
+            All students
+        </small>
+    </div>
+
+
+    <div class="metric-card">
+        <span>New Students</span>
+
+        <strong>{{ trend_total }}</strong>
+
+        <small>
+            Added in last 30 days
+        </small>
+    </div>
+
+
+    <div class="metric-card">
+        <span>Active Students</span>
+
+        <strong>{{ active_students|default:0 }}</strong>
+
+        <small>
+            Currently active
+        </small>
+    </div>
+
+
+    <div class="metric-card">
+        <span>Admissions</span>
+
+        <strong>{{ admission_students|default:0 }}</strong>
+
+        <small>
+            Confirmed admissions
+        </small>
+    </div>
+
+</div>
+
+
+<!-- =========================================================
+     CHART ROW 1
+     ========================================================= -->
+
+<div class="partner-report-grid mt-4">
+
+
+    <!-- STATUS DOUGHNUT -->
+    {% if not report_total %}<p class="text-secondary">No referrals yet. Add a student to start your report.</p>{% endif %}
+
+    <section class="panel partner-report-panel">
+
+        <div class="section-heading">
+            <div>
+                <h2>
+                    <span aria-hidden="true">&#x1F967;</span>
+                    Student Status
+                </h2>
+
+                <span>
+                    Current status of your students
+                </span>
+            </div>
+        </div>
+
+
+        <div class="partner-chart-center">
+
+            <canvas
+                id="studentStatusChart"
+                aria-label="Student status doughnut chart">
+            </canvas>
+
+        </div>
+
+
+        <div class="partner-chart-legend">
+
+            {% for row in status_rows %}
+
+            <div class="partner-legend-item">
+
+                <span
+                    class="partner-legend-dot"
+                    style="background: {{ row.color }};">
+                </span>
+
+                <span>
+                    {{ row.label }}
+                </span>
+
+                <strong>
+                    {{ row.value }}
+
+                    <small>
+                        ({{ row.percentage }}%)
+                    </small>
+                </strong>
+
+            </div>
+
+            {% endfor %}
+
+        </div>
+
+    </section>
+
+
+    <!-- STUDENT BREAKDOWN PIE -->
+
+    <section class="panel partner-report-panel">
+
+        <div class="section-heading">
+            <div>
+                <h2>
+                    <span aria-hidden="true">&#x1F4CA;</span>
+                    Student Breakdown
+                </h2>
+
+                <span>
+                    Distribution of your students
+                </span>
+            </div>
+        </div>
+
+
+        <div class="partner-chart-center">
+
+            <canvas
+                id="studentBreakdownChart"
+                aria-label="Student breakdown pie chart">
+            </canvas>
+
+        </div>
+
+
+        <div class="partner-chart-legend">
+
+            {% for row in status_rows %}
+
+            <div class="partner-legend-item">
+
+                <span
+                    class="partner-legend-dot"
+                    style="background: {{ row.color }};">
+                </span>
+
+                <span>
+                    {{ row.label }}
+                </span>
+
+                <strong>
+                    {{ row.value }}
+                </strong>
+
+            </div>
+
+            {% endfor %}
+
+        </div>
+
+    </section>
+
+</div>
+
+
+<!-- =========================================================
+     STUDENT TREND
+     ========================================================= -->
+
+<section class="panel mt-4">
+
+    <div class="section-heading">
+
+        <div>
+            <h2>
+                <span aria-hidden="true">&#x1F4C8;</span>
+                Students Added Over Time
+            </h2>
+
+            <span>
+                Last 30 days
+            </span>
+        </div>
+
+        <span>
+            {{ trend_total }}
+            new student{{ trend_total|pluralize }}
+        </span>
+
+    </div>
+
+
+    <div class="partner-line-chart-wrapper">
+
+        <canvas
+            id="studentTrendChart"
+            aria-label="Students added over the last 30 days">
+        </canvas>
+
+    </div>
+
+</section>
+
+
+<!-- =========================================================
+     STATUS BAR GRAPH
+     ========================================================= -->
+
+<section class="panel mt-4">
+
+    <div class="section-heading">
+
+        <div>
+            <h2>
+                <span aria-hidden="true">&#x1F4CA;</span>
+                Student Pipeline
+            </h2>
+
+            <span>
+                Students by current stage
+            </span>
+        </div>
+
+    </div>
+
+
+    <div class="partner-bar-chart-wrapper">
+
+        <canvas
+            id="studentPipelineChart"
+            aria-label="Student pipeline bar chart">
+        </canvas>
+
+    </div>
+
+</section>
+
+
+<!-- =========================================================
+     RECENT ACTIVITY
+     ========================================================= -->
+
+<section class="panel mt-4">
+
+    <div class="section-heading">
+
+        <div>
+            <h2>
+                <span aria-hidden="true">&#x1F552;</span>
+                Recent Student Activity
+            </h2>
+
+            <span>
+                Latest progress updates
+            </span>
+        </div>
+
+    </div>
+
+
+    <div class="timeline">
+
+        {% for item in activity %}
+
+        <article>
+
+            <a href="{% url 'partner-portal:detail' item.lead_id %}">
+                {{ item.lead__full_name }}
+            </a>
+
+            <span class="soft-badge ms-2">
+                {{ item.label }}
+            </span>
+
+            <small>
+                {{ item.changed_at|date:'d M Y, H:i' }}
+            </small>
+
+        </article>
+
+        {% empty %}
+
+        <p>
+            No student activity yet.
+        </p>
+
+        {% endfor %}
+
+    </div>
+
+</section>
+
+
+<!-- =========================================================
+     CHART.JS
+     ========================================================= -->
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+
+<script>
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    /* -------------------------------------------------------
+       STATUS DATA
+       ------------------------------------------------------- */
+
+    const statusLabels = [
+        {% for row in status_rows %}
+            "{{ row.label|escapejs }}",
+        {% endfor %}
+    ];
+
+    const statusValues = [
+        {% for row in status_rows %}
+            {{ row.value }},
+        {% endfor %}
+    ];
+
+    const statusColors = [
+        {% for row in status_rows %}
+            "{{ row.color }}",
+        {% endfor %}
+    ];
+
+
+    /* -------------------------------------------------------
+       TREND DATA
+       ------------------------------------------------------- */
+
+    const trendLabels = [
+        {% for point in trend %}
+            "{{ point.day|date:'d M' }}",
+        {% endfor %}
+    ];
+
+    const trendValues = [
+        {% for point in trend %}
+            {{ point.value }},
+        {% endfor %}
+    ];
+
+
+    /* -------------------------------------------------------
+       THEME HELPERS
+       ------------------------------------------------------- */
+    function getThemeColors() {
+        const isDark = document.documentElement.dataset.bsTheme === 'dark';
+        return {
+            isDark: isDark,
+            sliceBorder: isDark ? '#1e293b' : '#ffffff',
+            gridColor: isDark ? '#334155' : '#e2e8f0',
+            textColor: isDark ? '#94a3b8' : '#64748b',
+            lineBorder: isDark ? '#38bdf8' : '#0284c7',
+            lineBg: isDark ? 'rgba(56, 189, 248, 0.15)' : 'rgba(2, 132, 199, 0.12)',
+            pointBg: isDark ? '#38bdf8' : '#0284c7'
+        };
+    }
+    const themeColors = getThemeColors();
+
+    /* -------------------------------------------------------
+       DOUGHNUT
+       ------------------------------------------------------- */
+
+    const statusCanvas =
+        document.getElementById("studentStatusChart");
+    let statusChart = null;
+
+    if (statusCanvas) {
+
+        statusChart = new Chart(statusCanvas, {
+
+            type: "doughnut",
+
+            data: {
+
+                labels: statusLabels,
+
+                datasets: [{
+
+                    data: statusValues,
+
+                    backgroundColor: statusColors,
+
+                    borderWidth: 3,
+
+                    borderColor: themeColors.sliceBorder,
+
+                    hoverOffset: 8
+
+                }]
+
+            },
+
+            options: {
+
+                responsive: true,
+
+                maintainAspectRatio: true,
+
+                cutout: "68%",
+
+                plugins: {
+
+                    legend: {
+                        display: false
+                    },
+
+                    tooltip: {
+
+                        callbacks: {
+
+                            label: function(context) {
+
+                                const total =
+                                    context.dataset.data
+                                    .reduce(
+                                        (a, b) => a + b,
+                                        0
+                                    );
+
+                                const value =
+                                    context.raw;
+
+                                const percentage =
+                                    total
+                                    ? Math.round(
+                                        value * 100 / total
+                                    )
+                                    : 0;
+
+                                return (
+                                    " " +
+                                    context.label +
+                                    ": " +
+                                    value +
+                                    " (" +
+                                    percentage +
+                                    "%)"
+                                );
+                            }
+
+                        }
+
+                    }
+
+                }
+
+            }
+
+        });
+
+    }
+
+
+    /* -------------------------------------------------------
+       PIE CHART
+       ------------------------------------------------------- */
+
+    const breakdownCanvas =
+        document.getElementById("studentBreakdownChart");
+    let breakdownChart = null;
+
+    if (breakdownCanvas) {
+
+        breakdownChart = new Chart(breakdownCanvas, {
+
+            type: "pie",
+
+            data: {
+
+                labels: statusLabels,
+
+                datasets: [{
+
+                    data: statusValues,
+
+                    backgroundColor: statusColors,
+
+                    borderWidth: 3,
+
+                    borderColor: themeColors.sliceBorder,
+
+                    hoverOffset: 8
+
+                }]
+
+            },
+
+            options: {
+
+                responsive: true,
+
+                maintainAspectRatio: true,
+
+                plugins: {
+
+                    legend: {
+                        display: false
+                    }
+
+                }
+
+            }
+
+        });
+
+    }
+
+
+    /* -------------------------------------------------------
+       LINE / AREA GRAPH
+       ------------------------------------------------------- */
+
+    const trendCanvas =
+        document.getElementById("studentTrendChart");
+    let trendChart = null;
+
+    if (trendCanvas) {
+
+        trendChart = new Chart(trendCanvas, {
+
+            type: "line",
+
+            data: {
+
+                labels: trendLabels,
+
+                datasets: [{
+
+                    label: "Students Added",
+
+                    data: trendValues,
+
+                    borderWidth: 3,
+
+                    tension: 0.35,
+
+                    fill: true,
+
+                    pointRadius: 3,
+
+                    pointHoverRadius: 6,
+
+                    backgroundColor: themeColors.lineBg,
+
+                    borderColor: themeColors.lineBorder,
+
+                    pointBackgroundColor: themeColors.pointBg
+
+                }]
+
+            },
+
+            options: {
+
+                responsive: true,
+
+                maintainAspectRatio: false,
+
+                interaction: {
+                    intersect: false,
+                    mode: "index"
+                },
+
+                scales: {
+
+                    y: {
+
+                        beginAtZero: true,
+
+                        ticks: {
+                            precision: 0,
+                            color: themeColors.textColor
+                        },
+
+                        grid: {
+                            color: themeColors.gridColor
+                        }
+
+                    },
+
+                    x: {
+
+                        ticks: {
+                            color: themeColors.textColor
+                        },
+
+                        grid: {
+                            display: false
+                        }
+
+                    }
+
+                },
+
+                plugins: {
+
+                    legend: {
+                        display: false
+                    }
+
+                }
+
+            }
+
+        });
+
+    }
+
+
+    /* -------------------------------------------------------
+       PIPELINE BAR GRAPH
+       ------------------------------------------------------- */
+
+    const pipelineCanvas =
+        document.getElementById("studentPipelineChart");
+    let pipelineChart = null;
+
+    if (pipelineCanvas) {
+
+        pipelineChart = new Chart(pipelineCanvas, {
+
+            type: "bar",
+
+            data: {
+
+                labels: statusLabels,
+
+                datasets: [{
+
+                    label: "Students",
+
+                    data: statusValues,
+
+                    borderRadius: 7,
+
+                    borderSkipped: false,
+
+                    backgroundColor: statusColors
+
+                }]
+
+            },
+
+            options: {
+
+                responsive: true,
+
+                maintainAspectRatio: false,
+
+                indexAxis: "y",
+
+                scales: {
+
+                    x: {
+
+                        beginAtZero: true,
+
+                        ticks: {
+                            precision: 0,
+                            color: themeColors.textColor
+                        },
+
+                        grid: {
+                            color: themeColors.gridColor
+                        }
+
+                    },
+
+                    y: {
+
+                        ticks: {
+                            color: themeColors.textColor
+                        },
+
+                        grid: {
+                            display: false
+                        }
+
+                    }
+
+                },
+
+                plugins: {
+
+                    legend: {
+                        display: false
+                    }
+
+                }
+
+            }
+
+        });
+
+    }
+
+    /* -------------------------------------------------------
+       LISTEN FOR THEME CHANGE EVENT
+       ------------------------------------------------------- */
+    window.addEventListener("alp-theme-change", function () {
+        const c = getThemeColors();
+        if (statusChart) {
+            statusChart.data.datasets[0].borderColor = c.sliceBorder;
+            statusChart.update();
+        }
+        if (breakdownChart) {
+            breakdownChart.data.datasets[0].borderColor = c.sliceBorder;
+            breakdownChart.update();
+        }
+        if (trendChart) {
+            trendChart.data.datasets[0].borderColor = c.lineBorder;
+            trendChart.data.datasets[0].backgroundColor = c.lineBg;
+            trendChart.data.datasets[0].pointBackgroundColor = c.pointBg;
+            trendChart.options.scales.y.grid.color = c.gridColor;
+            trendChart.options.scales.y.ticks.color = c.textColor;
+            trendChart.options.scales.x.ticks.color = c.textColor;
+            trendChart.update();
+        }
+        if (pipelineChart) {
+            pipelineChart.options.scales.x.grid.color = c.gridColor;
+            pipelineChart.options.scales.x.ticks.color = c.textColor;
+            pipelineChart.options.scales.y.ticks.color = c.textColor;
+            pipelineChart.update();
+        }
+    });
+
+});
+
+</script>
+
+{% endblock %}

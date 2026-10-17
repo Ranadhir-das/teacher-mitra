@@ -1,0 +1,13 @@
+{% extends 'base.html' %}{% block title %}{{ title }}{% endblock %}{% block content %}<nav aria-label="Breadcrumb">
+<a href="{% url 'partners:detail' partner.pk %}">{{ partner.business_name }}</a> / {{ title }}</nav>
+<div class="page-heading mt-3">
+<div>
+<h1>{{ title }}.</h1>
+<p>{{ partner.partner_code }}</p>
+</div>
+</div>
+<section class="panel form-panel">
+<p class="text-secondary">Only active partners with enabled login accounts can use the portal. Changing access preserves existing leads.</p>
+<form method="post">{% csrf_token %}{{ form.non_field_errors }}{% for field in form %}{% include 'partners/field.html' %}{% endfor %}<button class="btn btn-primary" type="submit">Confirm change</button> <a class="btn btn-outline-secondary" href="{% url 'partners:detail' partner.pk %}">Cancel</a>
+</form>
+</section>{% endblock %}

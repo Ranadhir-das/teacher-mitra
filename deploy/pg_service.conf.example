@@ -1,0 +1,7 @@
+# Root-only /etc/teachermitra/pg_service.conf; no passwords in this file.
+[teachermitra]
+host=127.0.0.1
+port=5432
+dbname=REPLACE_DATABASE_NAME
+user=REPLACE_BACKUP_USER
+connect_timeout=10

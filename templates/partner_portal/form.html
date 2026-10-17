@@ -1,0 +1,16 @@
+{% extends 'partner_portal/base.html' %}{% block title %}{% if lead %}Edit referral{% else %}Submit lead{% endif %}{% endblock %}{% block portal_content %}<nav aria-label="Breadcrumb">
+<a href="{% url 'partner-portal:leads' %}">My leads</a> / {% if lead %}Edit{% else %}Submit{% endif %}</nav>
+<div class="page-heading mt-3">
+<div>
+<span class="eyebrow">A NEW OPPORTUNITY</span>
+<h1><span aria-hidden="true">&#x1F4DD;</span> {% if lead %}Update your referral.{% else %}Introduce a student.{% endif %}</h1>
+<p>Share their details and learning interests. We will take it from here.</p>
+</div>
+</div>
+<form method="post" class="lead-edit-form">{% csrf_token %}{{ form.non_field_errors }}{% if form.duplicate_matches != None %}<div class="alert alert-warning">
+<strong>Possible duplicate referral.</strong>
+<p>Please confirm only if this is a separate referral. Records outside your account are not displayed.</p>{% for match in form.duplicate_matches %}<div>{{ match.full_name }} &middot; {{ match.phone }} &middot; {{ match.status }}</div>{% endfor %}</div>{% endif %}{% for title, fields in form.sections %}<section class="panel mb-4">
+<h2 class="mb-4"><span aria-hidden="true">&#x1F4DD;</span> {{ title }}</h2>
+<div class="lead-form-grid">{% for field in fields %}{% include 'partners/field.html' %}{% endfor %}</div>
+</section>{% endfor %}<button class="btn btn-primary" type="submit">{% if lead %}Save referral{% else %}Submit lead{% endif %}</button> <a href="{% url 'partner-portal:leads' %}" class="btn btn-outline-secondary">Cancel</a>
+</form>{% endblock %}

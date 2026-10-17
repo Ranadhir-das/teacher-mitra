@@ -1,0 +1,95 @@
+{% extends 'base.html' %}
+{% block title %}{{ employee.name }}{% endblock %}
+
+{% block content %}
+<a class="text-link" href="{% url 'accounts:employee-list' %}">&larr; All employees</a>
+
+<div class="page-heading mt-4">
+    <div>
+        <span class="eyebrow">EMPLOYEE PROFILE</span>
+        <h1>{{ employee.name }}</h1>
+        <p>{{ employee.get_role_display }}</p>
+    </div>
+    {% if can_edit %}
+        <a class="btn btn-primary" href="{% url 'accounts:employee-edit' employee.pk %}">Edit employee</a>
+    {% endif %}
+</div>
+
+<section class="panel detail-panel">
+    {% if employee.profile_photo %}
+        <img class="profile-photo" src="{{ employee.profile_photo.url }}" alt="Profile photo of {{ employee.name }}">
+    {% endif %}
+
+    <dl class="row">
+        <dt class="col-sm-4">Email</dt>
+        <dd class="col-sm-8">{{ employee.email }}</dd>
+
+        <dt class="col-sm-4">Phone</dt>
+        <dd class="col-sm-8">{{ employee.phone|default:'Not provided' }}</dd>
+
+        <dt class="col-sm-4">Status</dt>
+        <dd class="col-sm-8">{{ employee.get_account_status_display }}</dd>
+
+        <dt class="col-sm-4">Username</dt>
+        <dd class="col-sm-8">{{ employee.username|default:'Not set' }}</dd>
+
+        <dt class="col-sm-4">Employee ID</dt>
+        <dd class="col-sm-8">{{ employee.employee_id|default:'Not set' }}</dd>
+
+        <dt class="col-sm-4">Joining date</dt>
+        <dd class="col-sm-8">{{ employee.joining_date|default:'Not set' }}</dd>
+
+        <dt class="col-sm-4">Teams</dt>
+        <dd class="col-sm-8">
+            {% for team in employee.crm_teams.all %}
+                {{ team.name }}{% if not forloop.last %}, {% endif %}
+            {% empty %}
+                Unassigned
+            {% endfor %}
+        </dd>
+
+        <dt class="col-sm-4">Profile information</dt>
+        <dd class="col-sm-8">{{ employee.profile_information|default:'Not provided'|linebreaksbr }}</dd>
+
+        <dt class="col-sm-4">Joined</dt>
+        <dd class="col-sm-8">{{ employee.date_joined|date:'M j, Y' }}</dd>
+
+        <dt class="col-sm-4">Last login</dt>
+        <dd class="col-sm-8">{{ employee.last_login|default:'Not yet signed in' }}</dd>
+    </dl>
+
+    {% if can_edit and employee.pk != user.pk %}
+    <div class="border-top pt-4 mt-4">
+        <h5 class="fw-semibold mb-3">Account Actions</h5>
+        <div class="d-flex flex-wrap gap-2">
+            {% if can_delete %}<a class="btn btn-outline-danger" href="{% url 'accounts:employee-delete' employee.pk %}">Delete employee</a>{% endif %}
+            {% if can_reset_password %}
+                <a class="btn btn-outline-primary" href="{% url 'accounts:employee-password' employee.pk %}">Reset password</a>
+            {% endif %}
+            <form method="post" action="{% url 'accounts:employee-status' employee.pk %}" class="d-inline">
+                {% csrf_token %}
+                {% if employee.is_active %}
+                    <input type="hidden" name="action" value="deactivate">
+                    <button class="btn btn-outline-danger" type="submit">Deactivate employee</button>
+                {% else %}
+                    <input type="hidden" name="action" value="activate">
+                    <button class="btn btn-outline-success" type="submit">Activate employee</button>
+                {% endif %}
+            </form>
+            {% if employee.account_status != 'BLOCKED' %}
+                <form method="post" action="{% url 'accounts:employee-status' employee.pk %}" class="d-inline">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="block">
+                    <button class="btn btn-outline-danger" type="submit">Block employee</button>
+                </form>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+</section>
+
+{% if employee.role == 'COUNSELLOR' %}
+    {% include 'accounts/employee_workload.html' %}
+{% endif %}
+{% endblock %}
+

@@ -1,0 +1,19 @@
+{% extends 'base.html' %}{% block title %}{% if object %}Edit{% else %}Add{% endif %} employee
+{% endblock %}
+{% block content %}<a class="text-link" href="{% url 'accounts:employee-list' %}">&larr; All employees</a>
+<div class="page-heading mt-4">
+<div>
+<span class="eyebrow">PEOPLE & ACCESS</span>
+<h1>{% if object %}Edit employee.{% else %}Welcome someone new.{% endif %}</h1>
+<p>Set up their profile, workspace role, team and account status. Counsellors require a username and employee ID. Team changes do not reassign existing leads.</p>
+</div>
+</div>
+<section class="panel form-panel">
+<form method="post" enctype="multipart/form-data">{% csrf_token %}{{ form.non_field_errors }}{% for field in form %}<div class="field-row">
+<label for="{{ field.id_for_label }}">{{ field.label }}{% if field.field.required %}<span class="text-danger"> *</span>{% endif %}</label>{{ field }}{% if field.help_text %}<div class="help-text">{{ field.help_text|safe }}</div>{% endif %}{{ field.errors }}</div>{% endfor %}<div class="d-flex gap-2 pt-3">
+<button class="btn btn-primary" type="submit">Save employee</button>
+<a class="btn btn-outline-secondary" href="{% url 'accounts:employee-list' %}">Cancel</a>
+</div>
+</form>
+</section>
+{% endblock %}

@@ -1,0 +1,278 @@
+{% extends 'base.html' %}{% block title %}{{ lead.full_name }}{% endblock %}{% block content %}
+<nav aria-label="Breadcrumb">
+<a href="{% url 'leads:list' %}">Leads</a> / {{ lead.full_name }}</nav>
+<div class="page-heading mt-3">
+<div>
+<span class="eyebrow">LEAD #{{ lead.pk }}</span>
+<h1>{{ lead.full_name }}</h1>
+<p>{{ lead.phone }}{% if lead.email %} &middot; {{ lead.email }}{% endif %}</p>
+</div>
+<div>{% include 'leads/status_badge.html' %} <span class="priority-badge priority-{{ lead.priority|lower }}">{{ lead.get_priority_display }}</span>{% if not lead.is_active %}<span class="soft-badge neutral">Archived</span>{% endif %}</div>
+</div>
+<div class="lead-quick-actions mb-4">{% if lead.is_active and can_manage_lead %}<a class="btn btn-primary" href="{% url 'leads:edit' lead.pk %}">Edit lead</a>{% if can_assign %}<a class="btn btn-outline-secondary" href="{% url 'leads:action' lead.pk 'assign' %}">Assign</a>{% endif %}<a class="btn btn-outline-secondary" href="{% url 'leads:action' lead.pk 'status' %}">Change status</a>
+<a class="btn btn-outline-secondary" href="{% url 'leads:action' lead.pk 'note' %}">Add note</a>{% endif %}{% if can_archive and can_manage_lead %}<a class="btn btn-outline-secondary" href="{% url 'leads:action' lead.pk 'archive' %}">{% if lead.is_active and can_manage_lead %}Archive{% else %}Restore{% endif %}</a>{% endif %}</div>
+<section class="panel mb-4">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <div>
+            <h2 class="mb-1">Applications &amp; Admissions</h2>
+            <p class="text-muted mb-0">University applications and admission progress for {{ lead.full_name }}.</p>
+        </div>
+        <div class="d-flex gap-2 align-items-center">
+            <a class="btn btn-sm btn-outline-secondary" href="{% url 'applications:list' %}?lead={{ lead.pk }}">View applications</a>
+            {% if lead.is_active %}
+                <a class="btn btn-sm btn-primary" href="{% url 'applications:create' %}?lead={{ lead.pk }}">+ Create application</a>
+            {% endif %}
+        </div>
+    </div>
+</section>
+<div class="lead-detail-grid">
+<div>{% for title, values in sections %}<section class="panel mb-4">
+<h2 class="mb-4">{{ title }}</h2>
+<dl class="detail-grid">{% for label, value in values %}<div>
+<dt>{{ label }}</dt>
+<dd>{{ value|default_if_none:'Not provided'|default:'Not provided'|linebreaksbr }}</dd>
+</div>{% endfor %}</dl>
+</section>{% endfor %}<section class="panel mb-4">
+<h2>Additional information</h2>
+<h3>Partner submission</h3>
+<p>{{ lead.partner_submitted_notes|default:'No partner-submitted notes.'|linebreaksbr }}</p>
+<p>Location preference: {{ lead.location_preference|default:'Not provided' }}</p>
+<p>{{ lead.additional_requirements|default:'No additional requirements.'|linebreaksbr }}</p>
+<h3 class="mt-4">General notes</h3>
+<p>{{ lead.general_notes|default:'No general notes.'|linebreaksbr }}</p>
+</section>
+</div>
+<aside>
+<section class="panel mb-4">
+<h2 class="mb-4">Lead information</h2>
+<dl class="detail-grid single">
+<div>
+<dt>Counsellor</dt>
+<dd>{{ lead.assigned_counsellor.name|default:'Unassigned' }}</dd>
+</div>
+<div>
+<dt>Team</dt>
+<dd>{{ lead.assigned_team.name|default:'No team' }}</dd>
+</div>
+<div>
+<dt>Source</dt>
+<dd>{{ lead.get_lead_source_display }}</dd>
+</div>
+<div><dt>Partner</dt><dd>{{ lead.partner.business_name|default:'No partner' }}{% if lead.partner %} <small>{{ lead.partner.partner_code }}</small>{% endif %}</dd></div>
+<div>
+<dt>Created by</dt>
+<dd>{{ lead.created_by.name }} &middot; {{ lead.created_at|date:'d M Y, H:i' }}</dd>
+</div>
+<div>
+<dt>Last updated by</dt>
+<dd>{{ lead.updated_by.name }} &middot; {{ lead.updated_at|date:'d M Y, H:i' }}</dd>
+</div>
+<div>
+<dt>Last contacted</dt>
+<dd>{{ lead.last_contacted_at|default:'Not yet contacted' }}</dd>
+</div>
+</dl>
+<h3>Tags</h3>
+<div class="d-flex gap-2 flex-wrap">{% for tag in lead.tags.all %}<span class="soft-badge neutral">{{ tag.name }}</span>{% empty %}<p class="text-secondary">No tags assigned.</p>{% endfor %}</div>
+</section>
+<section class="panel mb-4">
+<h2 class="d-flex justify-content-between align-items-center">
+<span>Follow-ups</span>
+
+{% if lead.is_active and can_manage_lead %}
+<a
+    class="btn btn-sm btn-primary"
+    href="{% url 'followups:create' lead.pk %}"
+>
+    + Schedule Follow-up
+</a>
+{% endif %}
+</h2>
+
+<div class="timeline">
+
+{% for followup in followups %}
+
+<article>
+
+<div class="d-flex justify-content-between align-items-start">
+
+<div>
+
+<strong>
+{{ followup.get_followup_type_display }}
+</strong>
+
+{% if followup.status == "SCHEDULED" and can_manage_lead and lead.is_active %}
+<span class="soft-badge">
+Scheduled
+</span>
+
+{% elif followup.status == "COMPLETED" %}
+<span class="soft-badge">
+Completed
+</span>
+
+{% elif followup.status == "MISSED" %}
+<span class="soft-badge">
+Missed
+</span>
+
+{% elif followup.status == "CANCELLED" %}
+<span class="soft-badge neutral">
+Cancelled
+</span>
+{% endif %}
+
+</div>
+
+<div class="text-end">
+<small>
+{{ followup.scheduled_at|date:'d M Y, H:i' }}
+</small>
+</div>
+
+</div>
+
+<small>
+Assigned to {{ followup.assigned_to.name }}
+</small>
+
+{% if followup.notes %}
+<p class="mt-2">
+{{ followup.notes|linebreaksbr }}
+</p>
+{% endif %}
+
+{% if followup.outcome %}
+<p class="mt-2">
+<strong>Outcome:</strong>
+{{ followup.outcome|linebreaksbr }}
+</p>
+{% endif %}
+
+{% if followup.status == "SCHEDULED" and can_manage_lead and lead.is_active %}
+
+<div class="d-flex gap-2 mt-2">
+
+<a
+    class="btn btn-sm btn-success"
+    href="{% url 'followups:complete' followup.pk %}"
+>
+    Complete
+</a>
+
+<form
+    method="post"
+    action="{% url 'followups:cancel' followup.pk %}"
+    class="d-inline"
+>
+    {% csrf_token %}
+
+    <button
+        type="submit"
+        class="btn btn-sm btn-outline-danger"
+        onclick="return confirm('Cancel this follow-up?');"
+    >
+        Cancel
+    </button>
+</form>
+
+</div>
+
+{% endif %}
+
+</article>
+
+{% empty %}
+
+<p class="text-secondary mt-3">
+No follow-ups scheduled yet.
+</p>
+
+{% endfor %}
+
+</div>
+</section>
+<section class="panel mb-4">
+<h2>Notes</h2>
+<div class="timeline">{% for note in notes %}<article>
+<small>{{ note.created_by.name }} &middot; {{ note.created_at|date:'d M Y, H:i' }}</small>
+<p>{{ note.note|linebreaksbr }}</p>
+</article>{% empty %}<p class="text-secondary mt-3">No notes yet.</p>{% endfor %}</div>
+</section>
+</aside>
+</div>
+<section class="panel mb-4">
+    <h2>Activity Timeline</h2>
+
+    <div class="timeline">
+
+        {% for item in activity %}
+
+        <article>
+
+            <div class="d-flex justify-content-between align-items-start">
+
+                <div>
+                    <span class="me-2">
+                        {{ item.icon }}
+                    </span>
+
+                    <strong>
+                        {{ item.title }}
+                    </strong>
+
+                    <span class="soft-badge neutral ms-2">
+                        {{ item.kind|title }}
+                    </span>
+                </div>
+
+                <small class="text-secondary">
+                    {{ item.timestamp|date:"d M Y, H:i" }}
+                </small>
+
+            </div>
+
+            {% if item.actor %}
+                <small class="text-secondary d-block mt-1">
+                    By {{ item.actor }}
+                </small>
+            {% endif %}
+
+            {% if item.description %}
+                <p class="mt-2 mb-0">
+                    {{ item.description|linebreaksbr }}
+                </p>
+            {% endif %}
+
+        </article>
+
+        {% empty %}
+
+        <p class="text-secondary mt-3 mb-0">
+            No activity recorded yet.
+        </p>
+
+        {% endfor %}
+
+    </div>
+</section>
+<div class="lead-history-grid">
+<section class="panel">
+<h2>Status history</h2>
+<div class="timeline">{% for event in status_history %}<article>
+<strong>{{ event.get_previous_status_display|default:'Created' }} &rarr; {{ event.get_new_status_display }}</strong>
+<small>{{ event.changed_by.name }} &middot; {{ event.changed_at|date:'d M Y, H:i' }}</small>{% if event.note %}<p>{{ event.note|linebreaksbr }}</p>{% endif %}</article>{% empty %}<p>No status changes.</p>{% endfor %}</div>
+</section>
+<section class="panel">
+<h2>Assignment history</h2>
+<div class="timeline">{% for event in assignment_history %}<article>
+<strong>{{ event.previous_counsellor.name|default:'Unassigned' }} &rarr; {{ event.new_counsellor.name|default:'Unassigned' }}</strong>
+<small>Team: {{ event.previous_team.name|default:'None' }} &rarr; {{ event.new_team.name|default:'None' }}</small>
+<small>{{ event.assigned_by.name }} &middot; {{ event.assigned_at|date:'d M Y, H:i' }}</small>
+<p>{{ event.reason|linebreaksbr }}</p>
+</article>{% empty %}<p class="text-secondary">Not assigned yet.</p>{% endfor %}</div>
+</section>
+</div>
+{% endblock %}

@@ -1,0 +1,67 @@
+{% extends 'base.html' %}{% block title %}{{ partner.business_name }}{% endblock %}{% block content %}<nav aria-label="Breadcrumb">
+<a href="{% url 'partners:list' %}">Partners</a> / {{ partner.partner_code }}</nav>
+<div class="page-heading mt-3">
+<div>
+<span class="eyebrow">{{ partner.partner_code }}</span>
+<h1>{{ partner.business_name }}</h1>
+<p>{{ partner.get_partner_type_display }} &middot; {{ partner.get_status_display }}</p>
+</div>
+<a class="btn btn-primary" href="{% url 'partners:edit' partner.pk %}">Edit partner</a>
+</div>
+<p><a class="btn btn-primary" href="{% url 'partners:onboarding' partner.pk %}">Review onboarding and documents</a></p>
+<div class="lead-quick-actions mb-4">
+<a class="btn btn-outline-danger" href="{% url 'partners:delete' partner.pk %}">Delete partner</a>
+<a class="btn btn-outline-secondary" href="{% url 'partners:status' partner.pk %}">Activate / deactivate / suspend</a>{% if partner.user_id %}<a class="btn btn-outline-secondary" href="{% url 'partners:account-access' partner.pk %}">Manage login access</a>{% else %}<a class="btn btn-outline-secondary" href="{% url 'partners:account' partner.pk %}">Create login account</a>{% endif %}<a class="btn btn-outline-secondary" href="{% url 'leads:list' %}?partner={{ partner.partner_code|urlencode }}">View partner leads</a>
+</div>
+<section class="metrics mb-4">{% for card in cards %}{% include 'components/dashboard_card.html' %}{% endfor %}</section>
+<div class="lead-history-grid">
+<section class="panel">
+<h2>Partner information</h2>
+<dl class="detail-grid mt-4">
+<div>
+<dt>Contact person</dt>
+<dd>{{ partner.contact_person }}</dd>
+</div>
+<div>
+<dt>Email</dt>
+<dd>{{ partner.email }}</dd>
+</div>
+<div>
+<dt>Phone</dt>
+<dd>{{ partner.phone }}</dd>
+</div>
+<div>
+<dt>Alternate phone</dt>
+<dd>{{ partner.alternate_phone|default:'Not provided' }}</dd>
+</div>
+<div>
+<dt>Address</dt>
+<dd>{{ partner.address|default:'Not provided'|linebreaksbr }}<br>{{ partner.city }} {{ partner.state }} {{ partner.pincode }}</dd>
+</div>
+<div>
+<dt>Created</dt>
+<dd>{{ partner.created_at }}</dd>
+</div>
+<div>
+<dt>Updated</dt>
+<dd>{{ partner.updated_at }}</dd>
+</div>
+<div>
+<dt>Login account</dt>
+<dd>{% if partner.user_id %}{{ partner.user.email }}<br>{% if partner.user.is_active %}Enabled{% else %}Disabled{% endif %}{% else %}Not created{% endif %}</dd>
+</div>
+</dl>
+</section>
+<section class="panel">
+<h2>Internal notes</h2>
+<p class="mt-3">{{ partner.notes|default:'No internal notes.'|linebreaksbr }}</p>
+<hr>
+<h3>Future functionality</h3>
+<p class="text-secondary">Applications and commission management are planned for later stages. No transaction totals are available yet.</p>
+</section>
+</div>
+<section class="panel mt-4">
+<h2>Recent referrals</h2>
+<ul class="mt-3">{% for lead in recent_leads %}<li>
+<a href="{% url 'leads:detail' lead.pk %}">{{ lead.full_name }}</a> &middot; {{ lead.get_status_display }}</li>{% empty %}<li>No leads attributed yet.</li>{% endfor %}</ul>
+</section>{% endblock %}

@@ -1,0 +1,100 @@
+<section class="panel mb-4">
+    <div class="section-heading">
+        <div>
+            <h2>Performance Period</h2>
+            <p class="text-secondary mb-0">
+                Choose the period for your counsellor performance metrics.
+            </p>
+        </div>
+    </div>
+
+    <div class="filter-pills mt-3">
+        <a
+            href="?period=today"
+            class="btn btn-sm {% if performance_period == 'today' %}btn-primary{% else %}btn-outline-secondary{% endif %}"
+        >
+            Today
+        </a>
+
+        <a
+            href="?period=week"
+            class="btn btn-sm {% if performance_period == 'week' %}btn-primary{% else %}btn-outline-secondary{% endif %}"
+        >
+            This Week
+        </a>
+
+        <a
+            href="?period=month"
+            class="btn btn-sm {% if performance_period == 'month' %}btn-primary{% else %}btn-outline-secondary{% endif %}"
+        >
+            This Month
+        </a>
+    </div>
+
+    <form method="get" class="row g-3 align-items-end mt-2">
+        <input type="hidden" name="period" value="custom">
+
+        <div class="col-md-4">
+            <label for="start_date" class="form-label">
+                Start Date
+            </label>
+
+            <input
+                type="date"
+                id="start_date"
+                name="start_date"
+                class="form-control"
+                value="{{ performance_start_date|date:'Y-m-d' }}"
+            >
+        </div>
+
+        <div class="col-md-4">
+            <label for="end_date" class="form-label">
+                End Date
+            </label>
+
+            <input
+                type="date"
+                id="end_date"
+                name="end_date"
+                class="form-control"
+                value="{{ performance_end_date|date:'Y-m-d' }}"
+            >
+        </div>
+
+        <div class="col-md-4">
+            <button type="submit" class="btn btn-primary w-100">
+                Apply Custom Range
+            </button>
+        </div>
+    </form>
+
+    <div class="mt-3 text-secondary">
+        Showing:
+        <strong>
+            {{ performance_start_date|date:"d M Y" }}
+            -
+            {{ performance_end_date|date:"d M Y" }}
+        </strong>
+    </div>
+</section>
+
+{% include 'accounts/counsellor_metrics.html' %}
+
+<div class="dashboard-bottom mb-4">
+    <section class="panel">
+        <h2>Today's follow-ups</h2>
+        <a href="{% url 'followups:list' %}?quick=today&amp;assigned_to={{ user.pk }}">View all</a>
+        {% for followup in today_followups %}
+        <p>
+            <a href="{% url 'leads:detail' followup.lead_id %}">{{ followup.lead.full_name }}</a>
+             &middot; {{ followup.scheduled_at|time:'H:i' }} &middot; {{ followup.get_followup_type_display }}
+        </p>{% empty %}<p>No outstanding follow-ups today.</p>{% endfor %}</section>
+<section class="panel">
+    <h2>Pending applications</h2>
+    <a href="{% url 'applications:list' %}">View applications</a>
+    {% for application in pending_applications %}<p>
+        <a href="{% url 'applications:detail' application.pk %}">
+            {{ application }}</a> &middot; {{ application.lead.full_name }} &middot; {{ application.get_status_display }}
+        </p>{% empty %}<p>No pending applications.</p>{% endfor %}</section></div>
+{% include 'accounts/counsellor_activity.html' %}

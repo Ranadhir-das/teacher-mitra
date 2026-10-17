@@ -1,0 +1,14 @@
+{% extends 'base.html' %}{% block title %}{% if partner %}Edit{% else %}Add{% endif %} partner{% endblock %}{% block content %}<nav aria-label="Breadcrumb">
+<a href="{% url 'partners:list' %}">Partners</a> / {% if partner %}Edit{% else %}New partner{% endif %}</nav>
+<div class="page-heading mt-3">
+<div>
+<span class="eyebrow">BUILD YOUR NETWORK</span>
+<h1>{% if partner %}Edit partner.{% else %}A new partnership.{% endif %}</h1>
+<p>Partner contact details and login identity are managed separately.</p>
+</div>
+</div>
+<form method="post" class="lead-edit-form">{% csrf_token %}{{ form.non_field_errors }}{% for title, fields in form.sections %}<section class="panel mb-4">
+<h2 class="mb-4">{{ title }}</h2>
+<div class="lead-form-grid">{% for field in fields %}{% include 'partners/field.html' %}{% endfor %}</div>
+</section>{% endfor %}<button class="btn btn-primary" type="submit">Save partner</button> <a class="btn btn-outline-secondary" href="{% url 'partners:list' %}">Cancel</a>
+</form>{% endblock %}

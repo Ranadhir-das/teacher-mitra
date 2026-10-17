@@ -1,0 +1,219 @@
+{% load static %}<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>{% block title %}Workspace
+{% endblock %}
+ &middot; Aspiring Life Partners</title>
+<script src="{% static 'js/theme.js' %}?v=2"></script>
+<link href="{% static 'vendor/bootstrap.min.css' %}" rel="stylesheet">
+<link href="{% static 'css/app.css' %}?v=workspace-sky-1" rel="stylesheet">
+</head>
+
+<body>{% block body %}
+
+<div class="workspace internal-workspace">
+
+<aside class="sidebar" id="sidebar" aria-label="Primary navigation">
+
+<a class="brand" href="{% url 'dashboard:index' %}">
+<span class="brand-mark">a<span>lp</span>
+</span>
+<span>Aspiring<br>
+<strong>Life Partners</strong>
+</span>
+</a>
+
+<div class="nav-label">WORKSPACE</div>
+
+<nav>
+
+<a class="nav-item {% if request.resolver_match.app_name == 'dashboard' %}selected{% endif %}"
+   href="{% url 'dashboard:index' %}">
+<span aria-hidden="true">&#x1F3E0;</span> Dashboard</a>
+
+
+<a class="nav-item {% if request.resolver_match.app_name == 'leads' %}selected{% endif %}"
+   href="{% url 'leads:list' %}">
+<span aria-hidden="true">&#x1F4CB;</span> Leads</a>
+
+
+<a class="nav-item {% if request.resolver_match.url_name == 'students' %}selected{% endif %}"
+   href="{% url 'students' %}">
+<span aria-hidden="true">&#x1F393;</span> Students</a>
+
+
+{% if can_manage_counsellors %}
+<a class="nav-item {% if request.resolver_match.app_name == 'accounts' %}selected{% endif %}"
+   href="{% url 'accounts:employee-list' %}">
+<span aria-hidden="true">&#x1F465;</span> Employees</a>
+{% endif %}
+
+
+{% if can_manage_employees %}
+<a class="nav-item {% if request.resolver_match.app_name == 'partners' %}selected{% endif %}"
+   href="{% url 'partners:list' %}">
+<span aria-hidden="true">&#x1F91D;</span> Partners</a>
+{% endif %}
+
+
+
+
+
+
+<a class="nav-item {% if request.resolver_match.app_name == 'courses' or request.resolver_match.app_name == 'countries' or request.resolver_match.app_name == 'universities' %}selected{% endif %}"
+   href="{% url 'courses:list' %}">
+<span aria-hidden="true">&#x1F4DA;</span> Courses</a>
+
+
+<a class="nav-item {% if request.resolver_match.app_name == 'applications' %}selected{% endif %}"
+   href="{% url 'applications:list' %}">
+<span aria-hidden="true">&#x1F4DD;</span> Applications &amp; Admissions</a>
+
+
+<!-- Reports -->
+<a class="nav-item {% if request.resolver_match.app_name == 'reports' %}selected{% endif %}"
+   href="{% url 'reports:dashboard' %}">
+<span aria-hidden="true">&#x1F4CA;</span> Reports</a>
+
+
+
+
+
+</nav>
+
+
+<div class="sidebar-footer">
+
+<form method="post"
+      action="{% url 'accounts:logout' %}"
+      class="mb-3">
+{% csrf_token %}
+<button class="btn btn-outline-secondary w-100" type="submit">
+<span aria-hidden="true">&#x1F6AA;</span> Logout
+</button>
+</form>
+
+<span class="status-dot">
+</span> Foundation workspace
+
+<small>Education consultancy CRM</small>
+
+</div>
+
+</aside>
+
+
+<div class="main-area">
+
+<header class="topbar">
+
+<div class="d-flex align-items-center gap-3">
+
+<button class="btn btn-outline-secondary menu-toggle"
+        type="button"
+        id="menu-toggle"
+        aria-controls="sidebar"
+        aria-expanded="false"
+        aria-label="Toggle navigation">
+&#9776;
+</button>
+
+<span class="topbar-label">
+Your education consultancy workspace
+</span>
+
+</div>
+
+
+<div class="topbar-actions">
+
+{% include 'components/theme_toggle.html' %}
+
+<div class="dropdown">
+
+<button class="profile-button dropdown-toggle"
+        data-bs-toggle="dropdown"
+        aria-expanded="false">
+
+<span class="avatar">
+{{ user.name|first|upper }}
+</span>
+
+<span>
+{{ user.get_short_name }}
+<small>{{ user.get_role_display }}</small>
+</span>
+
+</button>
+
+
+<ul class="dropdown-menu dropdown-menu-end">
+
+<li>
+<span class="dropdown-item-text text-muted">
+{{ user.email }}
+</span>
+</li>
+
+<li>
+<hr class="dropdown-divider">
+</li>
+
+<li>
+
+<form method="post"
+      action="{% url 'accounts:logout' %}">
+{% csrf_token %}
+
+<button class="dropdown-item"
+        type="submit">
+Sign out
+</button>
+
+</form>
+
+</li>
+
+</ul>
+
+</div>
+
+</div>
+
+</header>
+
+
+<main id="main-content" class="page-content">
+
+{% include 'components/messages.html' %}
+
+{% block content %}
+{% endblock %}
+
+</main>
+
+
+<footer class="page-footer">
+Aspiring Life Partners
+<span>Built for meaningful student journeys.</span>
+</footer>
+
+</div>
+
+</div>
+
+{% endblock %}
+
+
+<script src="{% static 'vendor/bootstrap.bundle.min.js' %}">
+</script>
+
+<script src="{% static 'js/app.js' %}?v=workspace-sky-1">
+</script>
+
+<script src="{% static 'js/education.js' %}?v=1"></script>
+</body>
+</html>

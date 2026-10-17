@@ -1,0 +1,5 @@
+{% extends 'base.html' %}
+{% block title %}Add document{% endblock %}
+{% block content %}<h1>Add document</h1><p>Upload a document or leave the file empty to create a pending request.</p>
+<form method="post" enctype="multipart/form-data" class="panel">{% csrf_token %}{{ form.as_p }}<button class="btn btn-primary" type="submit">Save document</button></form>
+{% if application %}<a href="{% url 'applications:detail' application.pk %}">Back to application</a>{% endif %}{% endblock %}

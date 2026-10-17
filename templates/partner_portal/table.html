@@ -1,0 +1,38 @@
+<div class="table-responsive">
+<table class="table align-middle">
+<thead>
+<tr>
+<th>Student</th>
+<th>Phone / email</th>
+<th>Course requirement</th>
+<th>Progress</th>
+<th>Priority</th>
+<th>Created</th>
+<th>Action</th>
+</tr>
+</thead>
+<tbody>{% for lead in leads %}<tr>
+<td>{{ lead.full_name }}</td>
+<td>{{ lead.phone }}<small class="d-block text-secondary">{{ lead.email }}</small>
+</td>
+<td>{{ lead.desired_course|default:'Not specified' }}</td>
+<td>
+<span class="soft-badge">{{ lead.public_progress.label }}</span>
+</td>
+<td>
+<span class="priority-badge priority-{{ lead.priority|lower }}">{{ lead.get_priority_display }}</span>
+</td>
+<td>{{ lead.created_at|date:'d M Y' }}</td>
+<td>
+<a href="{% url 'partner-portal:detail' lead.pk %}">View &rarr;</a>
+</td>
+</tr>{% empty %}<tr>
+<td colspan="7">
+<div class="empty-state">
+<h3>No referrals to show yet</h3>
+<p>Submit your first student lead or try another filter.</p>
+</div>
+</td>
+</tr>{% endfor %}</tbody>
+</table>
+</div>

@@ -1,0 +1,6 @@
+{% extends 'base.html' %}
+{% block title %}Delete {{ kind }}{% endblock %}
+{% block content %}<section class="panel"><h1>Delete {{ kind }}?</h1>
+<p>You are about to permanently delete <strong>{{ object_name }}</strong>{% if kind == 'partner' %} and its associated login{% endif %}.</p>
+<p>Records with linked CRM data or audit history cannot be deleted. You can deactivate those accounts instead.</p>
+<form method="post">{% csrf_token %}<div class="d-flex gap-2"><a class="btn btn-outline-secondary" href="{{ cancel_url }}">Cancel</a><button class="btn btn-danger" type="submit">Confirm deletion</button></div></form></section>{% endblock %}

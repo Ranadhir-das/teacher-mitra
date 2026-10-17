@@ -1,0 +1,27 @@
+# TeacherMitra release checklist — not authorization to deploy
+
+- [ ] Confirm intended repository/branch and root checkout; include required untracked migrations/modules.
+- [ ] Review all diffs and staged files; scan secrets; no databases/uploads/keys/backups in Git.
+- [ ] Resolve dependency advisories and rerun checks in CI (SQLite + PostgreSQL).
+- [ ] Verify VPS Linux/systemd support, supported Python/PostgreSQL, RAM/CPU/disk, port conflicts and package paths.
+- [ ] Restrict SSH; allow public 80/443; keep Gunicorn 8001 and PostgreSQL 5432 private/loopback.
+- [ ] Verify Hostinger A records for both hostnames to the approved IP; remove stale AAAA only after review.
+- [ ] Provision least-privilege app/DB users and protected environment/backup credentials.
+- [ ] Generate a new production secret on the target; do not reuse local/chat/test credentials.
+- [ ] Verify STATIC_ROOT, MEDIA_ROOT, PRIVATE_DOCUMENT_ROOT, CACHE_ROOT permissions and independent paths.
+- [ ] Review public profile media; confirm all student/onboarding documents remain private.
+- [ ] Rehearse SQLite-to-PostgreSQL import if data continuity is required; reconcile content and sequences.
+- [ ] Review migration plan and legacy country mappings; take a consistent DB + files backup.
+- [ ] Test restoring that backup on an isolated database and storage location.
+- [ ] Bootstrap ACME over HTTP only; obtain both-domain certificate before HTTPS/proxy activation.
+- [ ] Validate Nginx/systemd/Gunicorn syntax on the actual host before install/reload.
+- [ ] Approve release/maintenance window, then apply migrations and collectstatic as the service user.
+- [ ] Create production admin interactively with unique credentials; verify recovery procedure.
+- [ ] Verify redirect, CSRF, both hosts, secure cookies, health/readiness and generic error pages.
+- [ ] Verify admin/counsellor/partner flows, assigned-lead isolation, pending gates and cross-partner denial.
+- [ ] Verify private downloads require authentication; /media and /private_documents do not expose records.
+- [ ] Verify oversized uploads and login rate limiting; do not let untrusted X-Forwarded-* bypass them.
+- [ ] Verify static/admin CSS, profile images and persistent uploads survive release switch/restart.
+- [ ] Verify HTTPS renewal dry run, backup alerting and recurring maintenance-window approval.
+- [ ] Configure restricted log retention, disk alerts and ERROR/readiness monitoring; test an alert.
+- [ ] Record previous release, rollback decision and schema compatibility; retain the matching backup.

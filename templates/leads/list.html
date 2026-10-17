@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+{% block title %}{% if students %}Students{% else %}Leads{% endif %}{% endblock %}
+{% block content %}
+<nav aria-label="Breadcrumb">
+<a href="{% url 'dashboard:index' %}">Workspace</a> / {% if students %}Students{% else %}Leads{% endif %}</nav>
+<div class="page-heading mt-3">
+<div>
+<span class="eyebrow">STUDENT JOURNEYS</span>
+<h1>{% if students %}Your students.{% else %}Your leads.{% endif %}</h1>
+<p>{% if students %}Leads with confirmed admission, in one place.{% else %}Find the right next step for every student.{% endif %}</p>
+</div>
+<div class="d-flex gap-2">{% if is_admin %}<a class="btn btn-outline-secondary" href="{% url 'leads:tags' %}">Manage tags</a>{% endif %}{% if can_create %}<a class="btn btn-primary" href="{% url 'leads:create' %}">+ Add lead</a>{% endif %}</div>
+</div>
+<section class="panel mb-4">
+<form method="get" class="lead-filters">{{ filter_form.non_field_errors }}{% for field in filter_form %}<div class="field-row">
+<label for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}{{ field.errors }}</div>{% endfor %}<div class="d-flex align-items-end gap-2 pb-3">
+<button class="btn btn-primary" type="submit">Apply filters</button>
+<a class="btn btn-outline-secondary" href="{% if students %}{% url 'students' %}{% else %}{% url 'leads:list' %}{% endif %}">Reset</a>
+</div>
+</form>
+</section>
+<section class="panel">
+<div class="section-heading mb-3">
+<h2>{{ page_obj.paginator.count }} {% if students %}student{% else %}lead{% endif %}{{ page_obj.paginator.count|pluralize }}</h2>
+<span>Records visible to your role</span>
+</div>
+<form method="post" action="{% url 'leads:bulk' %}">{% csrf_token %}<div class="bulk-toolbar">
+<label for="bulk-operation">With selected</label>
+<select name="operation" id="bulk-operation" class="form-select">{% if can_assign %}<option value="assign">Assign counsellor / team</option>{% endif %}<option value="status">Change status</option>
+</select>
+<button class="btn btn-outline-secondary" type="submit">Review selected</button>
+<small class="text-muted">Up to 100 leads. Confirmation required.</small>
+</div>
+<div class="table-responsive">
+<table class="table align-middle lead-table">
+<thead>
+<tr>
+<th>
+<input type="checkbox" id="select-all-leads" aria-label="Select all active leads on this page">
+</th>
+<th>Name</th>
+<th>Phone</th>
+<th>Course</th>
+<th>Status</th>
+<th>Priority</th>
+<th>Counsellor</th>
+<th>Source</th>
+<th>Partner</th>
+<th>Created</th>
+<th>Actions</th>
+</tr>
+</thead>
+<tbody>{% for lead in page_obj %}<tr>
+<td>{% if lead.is_active %}<input type="checkbox" name="selected" value="{{ lead.pk }}" aria-label="Select {{ lead.full_name }}">{% endif %}</td>
+<td>
+<a class="employee-name" href="{% url 'leads:detail' lead.pk %}">{{ lead.full_name }}</a>{% if not lead.is_active %}<small class="d-block text-secondary">Archived</small>{% endif %}</td>
+<td>{{ lead.phone }}</td>
+<td>{{ lead.desired_course|default:'Not specified' }}</td>
+<td>{% include 'leads/status_badge.html' %}</td>
+<td>
+<span class="priority-badge priority-{{ lead.priority|lower }}">{{ lead.get_priority_display }}</span>
+</td>
+<td>{{ lead.assigned_counsellor.name|default:'Unassigned' }}</td>
+<td>{{ lead.get_lead_source_display }}</td>
+<td>{{ lead.partner.business_name|default:'None' }}</td>
+<td class="text-nowrap">{{ lead.created_at|date:'d M Y' }}</td>
+<td>
+<div class="lead-actions">
+<a href="{% url 'leads:detail' lead.pk %}">View</a>{% if lead.is_active %}<a href="{% url 'leads:edit' lead.pk %}">Edit</a>{% if can_assign %}<a href="{% url 'leads:action' lead.pk 'assign' %}">Assign</a>{% endif %}<a href="{% url 'leads:action' lead.pk 'status' %}">Status</a>{% endif %}</div>
+</td>
+</tr>{% empty %}<tr>
+<td colspan="11">
+<div class="empty-state">
+<h3>No matching {% if students %}students{% else %}leads{% endif %} yet</h3>
+<p>Try different filters{% if can_create %}, or add your first lead{% endif %}.</p>
+</div>
+</td>
+</tr>{% endfor %}</tbody>
+</table>
+</div>
+</form>
+{% include 'leads/pagination.html' %}</section>
+{% endblock %}

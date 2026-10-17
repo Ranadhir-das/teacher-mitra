@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+{% block title %}{{ document.title }}{% endblock %}
+{% block content %}<a href="{% url 'applications:detail' document.application_id %}">Back to application</a>
+<h1>{{ document.title }}</h1><section class="panel mb-4"><p>{{ document.get_document_type_display }} &middot; {{ document.get_status_display }}{% if document.deleted_at %} &middot; Deleted {{ document.deleted_at }}{% endif %}</p>
+<p>{{ document.original_name }}{% if document.size %} ({{ document.size|filesizeformat }}){% endif %}</p>
+{% if document.file and not document.deleted_at %}<a class="btn btn-outline-primary" href="{% url 'documents:view' document.pk %}" target="_blank" rel="noopener">View file</a> <a class="btn btn-outline-primary" href="{% url 'documents:download' document.pk %}">Download</a>{% endif %}
+{% if document.reviewed_at %}<p>Reviewed by {{ document.reviewed_by.name }} on {{ document.reviewed_at }}</p>{% endif %}
+{% if document.rejection_reason %}<h2>Rejection reason</h2><p>{{ document.rejection_reason|linebreaksbr }}</p>{% endif %}
+{% if document.verification_notes %}<h2>Verification notes</h2><p>{{ document.verification_notes|linebreaksbr }}</p>{% endif %}</section>
+{% if not document.deleted_at and document.lead.is_active %}<section class="panel mb-4"><h2>Manage document</h2><p>Rejecting requires a reason. Deletion removes the stored file and retains the activity history.</p><form method="post" enctype="multipart/form-data">{% csrf_token %}{{ form.as_p }}<button class="btn btn-primary" type="submit">Apply action</button></form></section>{% endif %}
+<section class="panel"><h2>Document history</h2>{% for event in history %}<article class="mb-3"><strong>{{ event.action }}: {{ event.get_previous_status_display|default:'New' }} &rarr; {{ event.get_new_status_display }}</strong><p>{{ event.actor.name }} &middot; {{ event.created_at }}</p><dl>{% for key, value in event.details.items %}<dt>{{ key }}</dt><dd>{{ value|linebreaksbr }}</dd>{% endfor %}</dl></article>{% endfor %}</section>{% endblock %}

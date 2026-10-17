@@ -1,0 +1,19 @@
+{% extends 'base.html' %}{% block title %}Manage tags{% endblock %}{% block content %}<nav aria-label="Breadcrumb">
+<a href="{% url 'leads:list' %}">Leads</a> / Tags</nav>
+<div class="page-heading mt-3">
+<div>
+<h1>Organize with tags.</h1>
+<p>Reusable labels for your student journeys.</p>
+</div>
+</div>
+<div class="lead-history-grid">
+<section class="panel">
+<h2>Workspace tags</h2>
+<div class="d-flex flex-wrap gap-2 mt-3">{% for item in tags %}<a class="soft-badge neutral" href="{% url 'leads:tag-edit' item.pk %}">{{ item.name }}</a>{% empty %}<p>No tags yet.</p>{% endfor %}</div>
+</section>
+<section class="panel">
+<h2>{% if tag %}Edit tag{% else %}Add tag{% endif %}</h2>
+<form method="post">{% csrf_token %}{{ form.non_field_errors }}{% for field in form %}<div class="field-row mt-3">
+<label for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}{{ field.errors }}</div>{% endfor %}<button class="btn btn-primary" type="submit">Save tag</button>{% if tag %}<a href="{% url 'leads:tags' %}" class="btn btn-outline-secondary">Add another</a>{% endif %}</form>
+</section>
+</div>{% endblock %}

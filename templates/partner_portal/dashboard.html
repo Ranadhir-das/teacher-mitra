@@ -1,0 +1,32 @@
+{% extends 'partner_portal/base.html' %}{% block title %}Partner dashboard{% endblock %}{% block portal_content %}<div class="page-heading">
+<div>
+<span class="eyebrow">{{ partner.business_name }}</span>
+<h1><span aria-hidden="true">&#x1F3E0;</span> Welcome, {{ partner.contact_person }}.</h1>
+<p>Follow every referral, from first introduction to the next chapter.</p>
+</div>
+</div>
+<section class="welcome-banner">
+<div>
+<span class="eyebrow">GOOD GUIDANCE STARTS WITH A CONNECTION</span>
+<h2><span aria-hidden="true">&#x1F3E0;</span> Introduce a student.<br>Open a world of possibility.</h2>
+<p>Share their requirements. Our team will guide the next steps.</p>
+<a class="btn btn-light" href="{% url 'partner-portal:submit' %}">Add Student &rarr;</a>
+</div>
+<div class="banner-art" aria-hidden="true">
+<div class="orbit orbit-one">
+</div>
+<div class="orbit orbit-two">
+</div>
+<span>&#8599;</span>
+</div>
+</section>
+<div class="section-heading">
+<h2><span aria-hidden="true">&#x1F3E0;</span> Your referrals at a glance</h2>
+<span>Live progress from your submitted leads</span>
+</div>
+<p><a href="{% url 'partner-portal:reports' %}">Explore your reports &rarr;</a></p><section class="metrics partner-metrics">{% for card in cards %}{% include 'components/dashboard_card.html' %}{% endfor %}</section>
+<section class="panel mt-4">
+<div class="section-heading mb-3">
+<h2><span aria-hidden="true">&#x1F3E0;</span> Recent referrals</h2>
+<a href="{% url 'partner-portal:leads' %}">View all</a>
+</div>{% include 'partner_portal/table.html' with leads=recent_leads %}</section>{% endblock %}

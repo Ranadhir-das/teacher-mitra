@@ -1,0 +1,38 @@
+{% extends 'partner_portal/base.html' %}{% block title %}{{ lead.full_name }}{% endblock %}{% block portal_content %}<nav aria-label="Breadcrumb">
+<a href="{% url 'partner-portal:leads' %}">My leads</a> / {{ lead.full_name }}</nav>
+<div class="page-heading mt-3">
+<div>
+<span class="eyebrow">YOUR REFERRAL</span>
+<h1><span aria-hidden="true">&#x1F393;</span> {{ lead.full_name }}</h1>
+<p>Submitted {{ lead.created_at|date:'d M Y' }} &middot; Updated {{ lead.updated_at|date:'d M Y' }}</p>
+</div>
+<span class="soft-badge">{{ lead.public_progress.label }}</span>
+</div>{% if can_edit %}<a class="btn btn-primary mb-4" href="{% url 'partner-portal:edit' lead.pk %}">Edit submitted information</a>{% else %}<p class="text-secondary">Contact Aspiring Life Partners if this referral needs a correction.</p>{% endif %}<section class="panel">
+<h2 class="mb-4"><span aria-hidden="true">&#x1F393;</span> Student details &amp; requirements</h2>
+<dl class="detail-grid">{% for label, value in values %}<div>
+<dt>{{ label|capfirst }}</dt>
+<dd>{{ value|default_if_none:'Not provided'|default:'Not provided'|linebreaksbr }}</dd>
+</div>{% endfor %}</dl>
+</section>
+<section class="panel mt-4" id="student-logs" aria-labelledby="student-logs-heading">
+<h2 id="student-logs-heading"><span aria-hidden="true">&#x1F4CB;</span> Student logs</h2>
+<p class="text-secondary">Submission and progress history, newest first.</p>
+<div class="timeline">
+{% for event in student_logs %}
+<article>
+<strong>{% if event.previous_status %}{{ event.previous_label }} &rarr; {{ event.new_label }}{% else %}Student submitted &middot; {{ event.new_label }}{% endif %}</strong>
+<small><time datetime="{{ event.changed_at|date:'c' }}">{{ event.changed_at|date:'d M Y, H:i' }}</time></small>
+</article>
+{% endfor %}
+{% if not student_logs.has_next %}
+<article><strong>Student record created</strong><small><time datetime="{{ lead.created_at|date:'c' }}">{{ lead.created_at|date:'d M Y, H:i' }}</time></small></article>
+{% endif %}
+</div>
+{% if student_logs.has_other_pages %}
+<nav class="pagination-bar" aria-label="Student log pages">
+{% if student_logs.has_previous %}<a href="?log_page={{ student_logs.previous_page_number }}#student-logs">Newer logs</a>{% endif %}
+<span>Page {{ student_logs.number }} of {{ student_logs.paginator.num_pages }}</span>
+{% if student_logs.has_next %}<a href="?log_page={{ student_logs.next_page_number }}#student-logs">Older logs</a>{% endif %}
+</nav>
+{% endif %}
+</section>{% endblock %}

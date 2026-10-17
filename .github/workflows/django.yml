@@ -1,0 +1,61 @@
+name: Django checks
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  crm:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        database: [sqlite, postgres]
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_DB: crm_test
+          POSTGRES_USER: crm_test
+          POSTGRES_PASSWORD: ci-only-not-a-production-password
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd 'pg_isready -U crm_test -d crm_test'
+          --health-interval 10s --health-timeout 5s --health-retries 5
+    env:
+      DJANGO_SETTINGS_MODULE: config.settings
+      DJANGO_READ_DOT_ENV: 'False'
+      DEBUG: 'True'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.14'
+          cache: pip
+          cache-dependency-path: 'requirements*.txt'
+      - name: Ephemeral test secret
+        run: |
+          echo "SECRET_KEY=$(python -c 'import secrets; print(secrets.token_urlsafe(64))')" >> "$GITHUB_ENV"
+      - name: Select isolated CI PostgreSQL database
+        if: matrix.database == 'postgres'
+        run: echo 'DATABASE_URL=postgresql://crm_test:ci-only-not-a-production-password@127.0.0.1:5432/crm_test' >> "$GITHUB_ENV"
+      - run: python -m pip install -r requirements-production.txt
+      - run: python -m pip check
+      - run: python manage.py check
+      - run: python manage.py makemigrations --check --dry-run
+      - run: python manage.py test --noinput
+      - name: Production configuration smoke check (no production database connection)
+        env:
+          DJANGO_SETTINGS_MODULE: config.production
+          DATABASE_URL: postgresql://ci:ci@127.0.0.1:5432/unused
+          STATIC_ROOT: /tmp/teachermitra-static
+          MEDIA_ROOT: /tmp/teachermitra-media
+          PRIVATE_DOCUMENT_ROOT: /tmp/teachermitra-private
+          CACHE_ROOT: /tmp/teachermitra-cache
+        run: |
+          python manage.py check --deploy --fail-level ERROR
+          python -m gunicorn --check-config --config deploy/gunicorn.conf.py config.wsgi:application
+          python manage.py collectstatic --noinput
+      - name: Shell and dependency checks
+        run: |
+          for script in deploy/scripts/*.sh; do bash -n "$script"; done
+          python -m pip install pip-audit==2.10.1
+          python -m pip_audit -r requirements-production.txt

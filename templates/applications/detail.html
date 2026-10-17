@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+{% block title %}{{ application }}{% endblock %}
+
+{% block content %}
+<a class="text-link" href="{% url 'applications:list' %}">&larr; All applications</a>
+
+<div class="page-heading mt-3">
+    <div>
+        <span class="eyebrow">APPLICATION #{{ application.pk }}</span>
+        <h1>{{ application }}</h1>
+        <p class="mb-0">
+            <span class="soft-badge {% if application.status == 'DRAFT' or application.status == 'CANCELLED' %}neutral{% endif %}">{{ application.get_status_display }}</span>
+            {% if application.reference %} &middot; Ref: {{ application.reference }}{% endif %}
+        </p>
+    </div>
+    {% if application.lead.is_active %}
+        <a class="btn btn-primary" href="{% url 'applications:edit' application.pk %}">Update application</a>
+    {% else %}
+        <span class="soft-badge neutral">Archived lead: read-only</span>
+    {% endif %}
+</div>
+
+<section class="panel mb-4">
+    <h2>Application details</h2>
+    <dl class="detail-grid mt-3">
+        <div>
+            <dt>Lead</dt>
+            <dd>
+                {% if can_view_lead %}
+                    <a href="{% url 'leads:detail' application.lead_id %}">{{ application.lead.full_name }}</a>
+                {% else %}
+                    {{ application.lead.full_name }}
+                {% endif %}
+            </dd>
+        </div>
+        <div>
+            <dt>Country</dt>
+            <dd>{{ application.university.country.name }}</dd>
+            <dt class="mt-2">University</dt>
+            <dd>{{ application.university.name }}</dd>
+        </div>
+        <div>
+            <dt>Course</dt>
+            <dd>{{ application.course }}</dd>
+        </div>
+        <div>
+            <dt>Reference</dt>
+            <dd>{{ application.reference|default:'Not provided' }}</dd>
+        </div>
+        <div>
+            <dt>Submission date</dt>
+            <dd>{{ application.submission_date|date:'d M Y'|default:'Not submitted' }}</dd>
+        </div>
+        <div>
+            <dt>Created</dt>
+            <dd>{{ application.created_at|date:'d M Y, H:i' }} by {{ application.created_by.name }}</dd>
+        </div>
+        <div>
+            <dt>Last updated</dt>
+            <dd>{{ application.updated_at|date:'d M Y, H:i' }} by {{ application.updated_by.name }}</dd>
+        </div>
+    </dl>
+
+    <h3 class="mt-4">Academic details</h3>
+    <p>{{ application.academic_details|default:'Not provided'|linebreaksbr }}</p>
+
+    <h3 class="mt-4">Remarks</h3>
+    <p>{{ application.remarks|default:'No remarks'|linebreaksbr }}</p>
+</section>
+
+{% include 'applications/enrollment_documents.html' %}
+
+<section class="panel">
+    <h2>Complete timeline</h2>
+    <div class="timeline mt-3">
+        {% for event in history %}
+        <article>
+            <strong>
+                {% if not event.previous_status %}
+                    Application created: {{ event.get_new_status_display }}
+                {% elif event.previous_status == event.new_status %}
+                    Application details updated
+                {% else %}
+                    {{ event.get_previous_status_display }} &rarr; {{ event.get_new_status_display }}
+                {% endif %}
+            </strong>
+            <p>{{ event.changed_at|date:'d M Y, H:i' }} &middot; {{ event.changed_by.name }}</p>
+            <dl>
+                {% for field, values in event.changes.items %}
+                    <dt>{{ field }}</dt>
+                    <dd>{{ values.before|default:'Empty'|linebreaksbr }} &rarr; {{ values.after|default:'Empty'|linebreaksbr }}</dd>
+                {% endfor %}
+            </dl>
+        </article>
+        {% empty %}
+        <p class="text-secondary mt-3">No history recorded.</p>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

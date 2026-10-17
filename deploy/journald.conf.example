@@ -1,0 +1,5 @@
+# Review host-wide impact before installing under /etc/systemd/journald.conf.d/.
+[Journal]
+Storage=persistent
+SystemMaxUse=256M
+MaxRetentionSec=14day

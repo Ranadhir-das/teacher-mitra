@@ -1,0 +1,15 @@
+{% extends 'partner_portal/base.html' %}{% block title %}My leads{% endblock %}{% block portal_content %}<div class="page-heading">
+<div>
+<span class="eyebrow">YOUR STUDENT REFERRALS</span>
+<h1><span aria-hidden="true">&#x1F393;</span> My leads.</h1>
+<p>Keep track of the opportunities you have introduced.</p>
+</div>
+<a class="btn btn-primary" href="{% url 'partner-portal:submit' %}">+ Submit lead</a>
+</div>
+<section class="panel mb-4">
+<form method="get" class="lead-filters">{{ form.non_field_errors }}{% for field in form %}{% include 'partners/field.html' %}{% endfor %}<div>
+<button class="btn btn-primary">Apply filters</button> <a href="{% url 'partner-portal:leads' %}" class="btn btn-outline-secondary">Reset</a>
+</div>
+</form>
+</section>
+<section class="panel">{% include 'partner_portal/table.html' with leads=page_obj %}{% include 'leads/pagination.html' %}</section>{% endblock %}

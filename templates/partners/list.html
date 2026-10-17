@@ -1,0 +1,65 @@
+{% extends 'base.html' %}{% block title %}Partners{% endblock %}{% block content %}
+<nav aria-label="Breadcrumb">
+<a href="{% url 'dashboard:index' %}">Workspace</a> / Partners</nav>
+<div class="page-heading mt-3">
+<div>
+<span class="eyebrow">REFERRAL NETWORK</span>
+<h1>Your partners.</h1>
+<p>Relationships that open new possibilities.</p>
+</div>
+<a class="btn btn-primary" href="{% url 'partners:create' %}">+ Add partner</a>
+</div>
+<p><a class="btn btn-outline-primary" href="{% url 'partners:list' %}?status=SUBMITTED">Partner approvals / onboarding</a></p>
+<section class="panel mb-4">
+<form method="get" class="lead-filters">{{ form.non_field_errors }}{% for field in form %}<div class="field-row">
+<label for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}{{ field.errors }}</div>{% endfor %}<div>
+<button class="btn btn-primary">Apply filters</button> <a class="btn btn-outline-secondary" href="{% url 'partners:list' %}">Reset</a>
+</div>
+</form>
+</section>
+<section class="panel">
+<h2>{{ page_obj.paginator.count }} partner{{ page_obj.paginator.count|pluralize }}</h2>
+<div class="table-responsive">
+<table class="table align-middle">
+<thead>
+<tr>
+<th>Partner</th>
+<th>Contact</th>
+<th>Phone / email</th>
+<th>Type</th>
+<th>Status</th>
+<th>Leads</th>
+<th>Created</th>
+<th>Actions</th>
+</tr>
+</thead>
+<tbody>{% for partner in page_obj %}<tr>
+<td>
+<a class="employee-name" href="{% url 'partners:detail' partner.pk %}">{{ partner.business_name }}</a>
+<small class="d-block text-secondary">{{ partner.partner_code }}</small>
+</td>
+<td>{{ partner.contact_person }}</td>
+<td>{{ partner.phone }}<small class="d-block">{{ partner.email }}</small>
+</td>
+<td>{{ partner.get_partner_type_display }}</td>
+<td>
+<span class="soft-badge {% if partner.status != 'ACTIVE' %}neutral{% endif %}">{{ partner.get_status_display }}</span>
+</td>
+<td>{{ partner.total_leads }}</td>
+<td>{{ partner.created_at|date:'d M Y' }}</td>
+<td>
+<div class="lead-actions">
+<a href="{% url 'partners:detail' partner.pk %}">View</a><a href="{% url 'partners:onboarding' partner.pk %}">Onboarding</a>
+<a href="{% url 'partners:edit' partner.pk %}">Edit</a>
+<a href="{% url 'partners:status' partner.pk %}">Status</a>{% if not partner.user_id %}<a href="{% url 'partners:account' partner.pk %}">Create login</a>{% endif %}</div>
+</td>
+</tr>{% empty %}<tr>
+<td colspan="8">
+<div class="empty-state">
+<h3>Your network starts here</h3>
+<p>No partners match these filters.</p>
+</div>
+</td>
+</tr>{% endfor %}</tbody>
+</table>
+</div>{% include 'leads/pagination.html' %}</section>{% endblock %}

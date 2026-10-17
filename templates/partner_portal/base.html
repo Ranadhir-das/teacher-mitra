@@ -1,0 +1,18 @@
+{% extends 'base.html' %}{% block body %}
+<div class="workspace partner-workspace">
+<aside class="sidebar" id="sidebar" aria-label="Partner navigation">
+<a class="brand" href="{% url 'partner-portal:dashboard' %}"><span class="brand-mark">alp</span><span>Aspiring<br><strong>Life Partners</strong></span></a>
+<div class="nav-label">PARTNER WORKSPACE</div>
+<nav>
+<a class="nav-item {% if request.resolver_match.url_name == 'dashboard' %}selected{% endif %}" href="{% url 'partner-portal:dashboard' %}"><span aria-hidden="true">&#x1F3E0;</span> Dashboard</a>
+{% if partner.status == 'ACTIVE' %}<a class="nav-item {% if request.resolver_match.url_name == 'leads' or request.resolver_match.url_name == 'detail' or request.resolver_match.url_name == 'edit' %}selected{% endif %}" href="{% url 'partner-portal:leads' %}"><span aria-hidden="true">&#x1F393;</span> My Leads / Students</a>
+<a class="nav-item {% if request.resolver_match.url_name == 'submit' %}selected{% endif %}" href="{% url 'partner-portal:submit' %}"><span aria-hidden="true">&#x2795;</span> Add Student</a>
+<a class="nav-item {% if request.resolver_match.url_name == 'reports' %}selected{% endif %}" href="{% url 'partner-portal:reports' %}"><span aria-hidden="true">&#x1F4CA;</span> Reports</a>
+<a class="nav-item {% if request.resolver_match.url_name == 'profile' %}selected{% endif %}" href="{% url 'partner-portal:profile' %}"><span aria-hidden="true">&#x1F464;</span> Profile</a>
+{% endif %}<a class="nav-item {% if request.resolver_match.url_name == 'onboarding' %}selected{% endif %}" href="{% url 'partner-portal:onboarding' %}"><span aria-hidden="true">&#x1F4CB;</span> Onboarding</a></nav>
+<div class="partner-sidebar-account"><span class="soft-badge">{{ partner.get_status_display }}</span><p class="mt-3">{{ partner.business_name }}<small class="d-block text-secondary">{{ partner.partner_code }}</small></p>
+<form method="post" action="{% url 'accounts:logout' %}">{% csrf_token %}<button class="btn btn-outline-secondary w-100" type="submit"><span aria-hidden="true">&#x1F6AA;</span> Logout</button></form></div>
+</aside>
+<div class="main-area"><header class="topbar"><div class="d-flex align-items-center gap-3"><button class="btn btn-outline-secondary menu-toggle" id="menu-toggle" type="button" aria-controls="sidebar" aria-expanded="false" aria-label="Toggle navigation">&#9776;</button><span class="topbar-label">Your partner workspace</span></div><div class="topbar-actions">{% include 'components/theme_toggle.html' %}<a class="profile-button" href="{% if partner.status == 'ACTIVE' %}{% url 'partner-portal:profile' %}{% else %}{% url 'partner-portal:onboarding' %}{% endif %}"><span class="avatar">{{ user.name|first|upper }}</span><span>{{ user.get_short_name }}<small>Partner</small></span></a></div></header>
+<main id="main-content" class="page-content">{% include 'components/messages.html' %}{% block portal_content %}{% endblock %}</main><footer class="page-footer">Aspiring Life Partners <span>Growing opportunities, together.</span></footer></div>
+</div>{% endblock %}

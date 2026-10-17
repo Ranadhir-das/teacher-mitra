@@ -1,0 +1,109 @@
+{% extends 'base.html' %}
+{% block title %}Applications &amp; Admissions{% endblock %}
+
+{% block content %}
+<div class="page-heading">
+    <div>
+        <span class="eyebrow">ENROLLMENT PIPELINE</span>
+        <h1>Applications &amp; Admissions</h1>
+        <p>Track applications from draft to admission.</p>
+    </div>
+    <a class="btn btn-primary" href="{% url 'applications:create' %}">+ Create application</a>
+</div>
+
+<!-- Filters -->
+<section class="panel mb-4">
+    <form method="get" class="lead-filters">
+        <div class="field-row">
+            <label for="app-search">Search</label>
+            <input class="form-control" type="search" id="app-search" name="search" value="{{ search }}" placeholder="Lead, reference or course">
+        </div>
+
+        <div class="field-row">
+            <label for="app-status">Status</label>
+            <select class="form-select" id="app-status" name="status">
+                <option value="">All statuses</option>
+                {% for value, label in status_choices %}
+                    <option value="{{ value }}" {% if selected_status == value %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        {% if request.GET.lead %}
+            <input type="hidden" name="lead" value="{{ request.GET.lead }}">
+        {% endif %}
+
+        <div class="filter-actions">
+            <button class="btn btn-primary" type="submit">Apply filters</button>
+            <a class="btn btn-outline-secondary" href="{% url 'applications:list' %}">Reset</a>
+        </div>
+    </form>
+
+    {% if request.GET.lead %}
+        <div class="mt-3 pt-2 border-top d-flex align-items-center gap-2">
+            <span class="text-muted small">Active filter: Lead #{{ request.GET.lead }}</span>
+            <a class="btn btn-sm btn-outline-secondary" href="{% url 'applications:list' %}" style="padding: 2px 8px; font-size: 11px;">Clear lead filter</a>
+        </div>
+    {% endif %}
+</section>
+
+<!-- Applications Table -->
+<section class="panel">
+    <div class="section-heading mb-3">
+        <h2>{{ page_obj.paginator.count }} application{{ page_obj.paginator.count|pluralize }}</h2>
+        <span>Student university applications</span>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table align-middle">
+            <thead>
+                <tr>
+                    <th>Application</th>
+                    <th>Lead</th>
+                    <th>University / Course</th>
+                    <th>Status</th>
+                    <th>Submitted</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for application in page_obj %}
+                <tr>
+                    <td>
+                        <a class="employee-name" href="{% url 'applications:detail' application.pk %}">{{ application }}</a>
+                        {% if application.reference %}
+                            <small class="d-block text-secondary">Ref: {{ application.reference }}</small>
+                        {% endif %}
+                    </td>
+                    <td>{{ application.lead.full_name }}</td>
+                    <td>
+                        {{ application.university.name }}
+                        <small class="d-block text-secondary">{{ application.course.name }}</small>
+                    </td>
+                    <td>
+                        <span class="soft-badge {% if application.status == 'DRAFT' or application.status == 'CANCELLED' %}neutral{% endif %}">
+                            {{ application.get_status_display }}
+                        </span>
+                    </td>
+                    <td class="text-nowrap">{{ application.submission_date|date:'d M Y'|default:'Not submitted' }}</td>
+                    <td class="text-end">
+                        <a class="btn btn-sm btn-outline-primary" href="{% url 'applications:detail' application.pk %}">View &rarr;</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6">
+                        <div class="empty-state">
+                            <h3>No applications found</h3>
+                            <p>Try different filters or create a new student application.</p>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {% include 'leads/pagination.html' %}
+</section>
+{% endblock %}

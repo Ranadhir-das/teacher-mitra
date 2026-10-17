@@ -1,0 +1,80 @@
+{% extends 'base.html' %}{% block title %}Dashboard{% endblock %}{% block content %}<div class="page-heading">
+<div>
+<span class="eyebrow">WORKSPACE OVERVIEW</span>
+<h1>Welcome, {{ user.get_short_name }}.</h1>
+<p>Your student journeys, with the next step in focus.</p>
+</div>
+<a class="btn btn-primary" href="{% url 'leads:list' %}">Open leads &rarr;</a>
+</div>
+<div class="dashboard-shortcuts mb-4"><a href="{% url 'students' %}"><span aria-hidden="true">&#x1F393;</span> Students</a><a href="{% url 'leads:list' %}"><span aria-hidden="true">&#x1F4CB;</span> My leads</a>{% if can_manage_employees %}<a href="{% url 'partners:list' %}?status=PENDING"><span aria-hidden="true">&#x1F91D;</span> Partner approvals</a><a href="{% url 'accounts:employee-list' %}"><span aria-hidden="true">&#x1F465;</span> Manage team</a>{% endif %}</div>
+<section class="welcome-banner">
+<div>
+<span class="eyebrow">GUIDANCE THAT MAKES A DIFFERENCE</span>
+<h2>Every conversation.<br>A new possibility.</h2>
+<p>Your team, your students, and their next chapter.</p>{% if can_create_lead %}<a class="btn btn-light" href="{% url 'leads:create' %}">Add a lead &rarr;</a>{% else %}<a class="btn btn-light" href="{% url 'leads:list' %}">View your leads &rarr;</a>{% endif %}</div>
+<div class="banner-art" aria-hidden="true">
+<div class="orbit orbit-one">
+</div>
+<div class="orbit orbit-two">
+</div>
+<span>&#8599;</span>
+<small>GROW TOGETHER</small>
+</div>
+</section>
+<div class="section-heading">
+<h2><span aria-hidden="true">&#x1F4CA;</span> At a glance</h2>
+<span>Live data &middot; Active leads within your access</span>
+</div>
+<section class="metrics partner-metrics">{% for card in cards %}{% include 'components/dashboard_card.html' with card=card %}{% endfor %}</section>
+<div class="dashboard-bottom">
+<section class="panel">
+<div class="section-heading">
+<h2><span aria-hidden="true">&#x1F393;</span> Recent leads</h2>
+<a href="{% url 'leads:list' %}">View all</a>
+</div>
+<div class="table-responsive">
+<table class="table align-middle">
+<thead>
+<tr>
+<th>Student</th>
+<th>Status</th>
+<th>Counsellor</th>
+</tr>
+</thead>
+<tbody>{% for lead in recent_leads %}<tr>
+<td>
+<a href="{% url 'leads:detail' lead.pk %}">{{ lead.full_name }}</a>
+<small class="d-block text-secondary">{{ lead.desired_course|default:'Course undecided' }}</small>
+</td>
+<td>{% include 'leads/status_badge.html' %}</td>
+<td>{{ lead.assigned_counsellor.name|default:'Unassigned' }}</td>
+</tr>{% empty %}<tr>
+<td colspan="3">
+<div class="empty-state">
+<h3>Your next chapter starts here</h3>
+<p>No active leads in your workspace yet.</p>
+</div>
+</td>
+</tr>{% endfor %}</tbody>
+</table>
+</div>
+</section>
+<section class="panel">
+<h2><span aria-hidden="true">&#x1F4E1;</span> Top lead sources</h2>{% for source in sources %}<div class="source-row">
+<span>{{ source.label }}</span>
+<strong>{{ source.count }}</strong>
+</div>{% empty %}<p class="text-secondary mt-4">No source data yet.</p>{% endfor %}</section>
+</div>
+<section class="panel mt-4">
+<h2><span aria-hidden="true">&#x1F308;</span> Lead status distribution</h2>
+<div class="status-chart" role="img" aria-label="Current lead counts by status">{% for item in distribution %}<div class="chart-row">
+<span>{{ item.label }}</span>
+<div class="chart-track">
+<div class="chart-bar" style="width: {{ item.percent }}%">
+</div>
+</div>
+<strong>{{ item.count }}</strong>
+</div>{% empty %}<p class="text-secondary mt-3">No active lead data to display.</p>{% endfor %}</div>
+</section>
+{% if user.role == 'COUNSELLOR' %}{% include 'dashboard/counsellor_workload.html' %}{% endif %}
+{% endblock %}

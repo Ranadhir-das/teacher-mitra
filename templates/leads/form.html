@@ -1,0 +1,25 @@
+{% extends 'base.html' %}{% block title %}{% if lead %}Edit{% else %}Add{% endif %} lead{% endblock %}{% block content %}
+<nav aria-label="Breadcrumb">
+<a href="{% url 'leads:list' %}">Leads</a> / {% if lead %}Edit {{ lead.full_name }}{% else %}New lead{% endif %}</nav>
+<div class="page-heading mt-3">
+<div>
+<span class="eyebrow">A NEW POSSIBILITY</span>
+<h1>{% if lead %}Update the journey.{% else %}Start a student journey.{% endif %}</h1>
+<p>Capture what matters. Required fields are marked with an asterisk.</p>
+</div>
+</div>
+<form method="post" class="lead-edit-form">{% csrf_token %}{{ form.non_field_errors }}
+{% if form.duplicate_matches != None %}<div class="alert alert-warning">
+<strong>Possible duplicate lead found.</strong>
+<p>Review these records before creating or saving a separate entry. Matching records outside your access are not displayed.</p>{% for match in form.duplicate_matches %}<div>
+<a href="{% url 'leads:detail' match.id %}">{{ match.full_name }}</a> &middot; {{ match.phone }} &middot; {{ match.status_display }} &middot; {{ match.assigned_counsellor__name|default:'Unassigned' }}</div>{% endfor %}</div>{% endif %}
+{% for title, fields in form.sections %}<section class="panel mb-4">
+<h2 class="mb-4">{{ title }}</h2>
+<div class="lead-form-grid">{% for field in fields %}<div class="field-row {% if field.name == 'general_notes' or field.name == 'confirm_duplicate' %}full-width{% endif %}">
+<label for="{{ field.id_for_label }}">{{ field.label }}{% if field.field.required %} <span class="text-danger">*</span>{% endif %}</label>{{ field }}{% if field.help_text %}<div class="help-text">{{ field.help_text }}</div>{% endif %}{{ field.errors }}</div>{% endfor %}</div>
+</section>{% endfor %}
+<div class="form-actions">
+<button class="btn btn-primary" type="submit">Save lead</button>
+<a class="btn btn-outline-secondary" href="{% url 'leads:list' %}">Cancel</a>
+</div>
+</form>{% endblock %}

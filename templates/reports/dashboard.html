@@ -1,0 +1,654 @@
+{% extends "base.html" %}
+
+{% block title %}Reports & Analytics{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid py-4">
+
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold mb-1">Reports & Analytics</h2>
+            <p class="text-muted mb-0">
+                Monitor leads, counsellor performance, partners, applications and admissions.
+            </p>
+        </div>
+    </div>
+
+
+    <!-- ================= LEAD ANALYTICS ================= -->
+
+    <div class="mb-4">
+        <h4 class="fw-bold mb-3">Lead Analytics</h4>
+
+        <div class="row g-4">
+
+            <!-- Lead Status -->
+            <div class="col-lg-6">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-body">
+
+                        <h5 class="fw-semibold mb-3">
+                            Leads by Status
+                        </h5>
+
+                        <div style="height:320px;">
+                            <canvas id="leadStatusChart"></canvas>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+
+            <!-- Lead Source -->
+            <div class="col-lg-6">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-body">
+
+                        <h5 class="fw-semibold mb-3">
+                            Leads by Source
+                        </h5>
+
+                        <div style="height:320px;">
+                            <canvas id="leadSourceChart"></canvas>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+
+    <!-- ================= COUNSELLOR PERFORMANCE ================= -->
+
+    <div class="mb-4">
+
+        <h4 class="fw-bold mb-3">
+            Counsellor Performance
+        </h4>
+
+        <div class="card shadow-sm border-0">
+
+            <div class="card-body">
+
+                <div style="height:380px;">
+                    <canvas id="counsellorChart"></canvas>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ================= PARTNER PERFORMANCE ================= -->
+
+    <div class="mb-4">
+
+        <h4 class="fw-bold mb-3">
+            Partner Performance
+        </h4>
+
+        <div class="card shadow-sm border-0">
+
+            <div class="card-body">
+
+                <div style="height:380px;">
+                    <canvas id="partnerChart"></canvas>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ================= APPLICATION ANALYTICS ================= -->
+
+    <div class="mb-4">
+
+        <h4 class="fw-bold mb-3">
+            Application Analytics
+        </h4>
+
+        <div class="row g-4">
+
+            <!-- Application Status -->
+            <div class="col-lg-6">
+
+                <div class="card shadow-sm border-0 h-100">
+
+                    <div class="card-body">
+
+                        <h5 class="fw-semibold mb-3">
+                            Applications by Status
+                        </h5>
+
+                        <div style="height:320px;">
+                            <canvas id="applicationStatusChart"></canvas>
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- Applications by University -->
+            <div class="col-lg-6">
+
+                <div class="card shadow-sm border-0 h-100">
+
+                    <div class="card-body">
+
+                        <h5 class="fw-semibold mb-3">
+                            Applications by University
+                        </h5>
+
+                        <div style="height:320px;">
+                            <canvas id="applicationUniversityChart"></canvas>
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ================= ADMISSION ANALYTICS ================= -->
+
+    <div class="mb-4">
+
+        <h4 class="fw-bold mb-3">
+            Admission Analytics
+        </h4>
+
+        <div class="row g-4">
+
+            <!-- Admission Status -->
+            <div class="col-lg-6">
+
+                <div class="card shadow-sm border-0 h-100">
+
+                    <div class="card-body">
+
+                        <h5 class="fw-semibold mb-3">
+                            Admissions by Status
+                        </h5>
+
+                        <div style="height:320px;">
+                            <canvas id="admissionStatusChart"></canvas>
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- Admission University -->
+            <div class="col-lg-6">
+
+                <div class="card shadow-sm border-0 h-100">
+
+                    <div class="card-body">
+
+                        <h5 class="fw-semibold mb-3">
+                            Admissions by University
+                        </h5>
+
+                        <div style="height:320px;">
+                            <canvas id="admissionUniversityChart"></canvas>
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ================= EXACT NUMBERS ================= -->
+
+    <div class="mb-5">
+
+        <h4 class="fw-bold mb-3">
+            Report Summary
+        </h4>
+
+        <div class="row g-4">
+
+            <div class="col-md-4">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body">
+                        <h6 class="text-muted">Total Leads</h6>
+                        <h2 class="fw-bold">
+                            {{ lead_report.total }}
+                        </h2>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body">
+                        <h6 class="text-muted">Total Applications</h6>
+                        <h2 class="fw-bold">
+                            {{ application_report.total }}
+                        </h2>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body">
+                        <h6 class="text-muted">Total Admissions</h6>
+                        <h2 class="fw-bold">
+                            {{ admission_report.total }}
+                        </h2>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+
+<!-- Django JSON Data -->
+
+{{ lead_report.by_status|json_script:"lead-status-data" }}
+{{ lead_report.by_source|json_script:"lead-source-data" }}
+
+{{ counsellor_report|json_script:"counsellor-data" }}
+
+{{ partner_report|json_script:"partner-data" }}
+
+{{ application_report.by_status|json_script:"application-status-data" }}
+{{ application_report.by_university|json_script:"application-university-data" }}
+
+{{ admission_report.by_status|json_script:"admission-status-data" }}
+{{ admission_report.by_university|json_script:"admission-university-data" }}
+
+
+<script>
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    function getData(id) {
+        const el = document.getElementById(id);
+        return el ? JSON.parse(el.textContent) : [];
+    }
+
+    const leadStatus = getData("lead-status-data");
+    const leadSource = getData("lead-source-data");
+    const counsellors = getData("counsellor-data");
+    const partners = getData("partner-data");
+    const applicationStatus = getData("application-status-data");
+    const applicationUniversity = getData("application-university-data");
+    const admissionStatus = getData("admission-status-data");
+    const admissionUniversity = getData("admission-university-data");
+
+    /* ================= THEME CONFIGURATION ================= */
+    function getThemeColors() {
+        const isDark = document.documentElement.dataset.bsTheme === 'dark';
+        return {
+            isDark: isDark,
+            sliceBorder: isDark ? '#1e293b' : '#ffffff',
+            gridColor: isDark ? '#334155' : '#e2e8f0',
+            textColor: isDark ? '#94a3b8' : '#64748b',
+            sky: isDark ? '#38bdf8' : '#0284c7',
+            skyLight: isDark ? '#7dd3fc' : '#38bdf8',
+            emerald: isDark ? '#34d399' : '#10b981'
+        };
+    }
+
+    const themeColors = getThemeColors();
+    Chart.defaults.color = themeColors.textColor;
+    Chart.defaults.borderColor = themeColors.gridColor;
+
+    const slicePalette = [
+        '#0284c7', '#0ea5e9', '#38bdf8', '#06b6d4',
+        '#10b981', '#f59e0b', '#8b5cf6', '#ec4899',
+        '#64748b', '#14b8a6', '#6366f1', '#f97316'
+    ];
+
+    /* ================= LEAD STATUS ================= */
+    const leadStatusEl = document.getElementById("leadStatusChart");
+    const leadStatusChart = leadStatusEl ? new Chart(leadStatusEl, {
+        type: "doughnut",
+        data: {
+            labels: leadStatus.map(item => item.label),
+            datasets: [{
+                data: leadStatus.map(item => item.value),
+                backgroundColor: slicePalette,
+                borderColor: themeColors.sliceBorder,
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: "right",
+                    labels: { color: themeColors.textColor }
+                }
+            }
+        }
+    }) : null;
+
+    /* ================= LEAD SOURCE ================= */
+    const leadSourceEl = document.getElementById("leadSourceChart");
+    const leadSourceChart = leadSourceEl ? new Chart(leadSourceEl, {
+        type: "pie",
+        data: {
+            labels: leadSource.map(item => item.label),
+            datasets: [{
+                data: leadSource.map(item => item.value),
+                backgroundColor: slicePalette,
+                borderColor: themeColors.sliceBorder,
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: "right",
+                    labels: { color: themeColors.textColor }
+                }
+            }
+        }
+    }) : null;
+
+    /* ================= COUNSELLORS ================= */
+    const counsellorEl = document.getElementById("counsellorChart");
+    const counsellorChart = counsellorEl ? new Chart(counsellorEl, {
+        type: "bar",
+        data: {
+            labels: counsellors.map(item => item.label),
+            datasets: [
+                {
+                    label: "Leads",
+                    data: counsellors.map(item => item.leads),
+                    backgroundColor: "#0284c7",
+                    borderRadius: 4
+                },
+                {
+                    label: "Applications",
+                    data: counsellors.map(item => item.applications),
+                    backgroundColor: "#38bdf8",
+                    borderRadius: 4
+                },
+                {
+                    label: "Admissions",
+                    data: counsellors.map(item => item.admissions),
+                    backgroundColor: "#10b981",
+                    borderRadius: 4
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                x: {
+                    ticks: { color: themeColors.textColor },
+                    grid: { display: false }
+                },
+                y: {
+                    beginAtZero: true,
+                    ticks: { color: themeColors.textColor },
+                    grid: { color: themeColors.gridColor }
+                }
+            },
+            plugins: {
+                legend: {
+                    labels: { color: themeColors.textColor }
+                }
+            }
+        }
+    }) : null;
+
+    /* ================= PARTNERS ================= */
+    const partnerEl = document.getElementById("partnerChart");
+    const partnerChart = partnerEl ? new Chart(partnerEl, {
+        type: "bar",
+        data: {
+            labels: partners.map(item => item.label),
+            datasets: [
+                {
+                    label: "Leads",
+                    data: partners.map(item => item.leads),
+                    backgroundColor: "#0284c7",
+                    borderRadius: 4
+                },
+                {
+                    label: "Applications",
+                    data: partners.map(item => item.applications),
+                    backgroundColor: "#38bdf8",
+                    borderRadius: 4
+                },
+                {
+                    label: "Admissions",
+                    data: partners.map(item => item.admissions),
+                    backgroundColor: "#10b981",
+                    borderRadius: 4
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                x: {
+                    ticks: { color: themeColors.textColor },
+                    grid: { display: false }
+                },
+                y: {
+                    beginAtZero: true,
+                    ticks: { color: themeColors.textColor },
+                    grid: { color: themeColors.gridColor }
+                }
+            },
+            plugins: {
+                legend: {
+                    labels: { color: themeColors.textColor }
+                }
+            }
+        }
+    }) : null;
+
+    /* ================= APPLICATION STATUS ================= */
+    const applicationStatusEl = document.getElementById("applicationStatusChart");
+    const applicationStatusChart = applicationStatusEl ? new Chart(applicationStatusEl, {
+        type: "doughnut",
+        data: {
+            labels: applicationStatus.map(item => item.label),
+            datasets: [{
+                data: applicationStatus.map(item => item.value),
+                backgroundColor: slicePalette,
+                borderColor: themeColors.sliceBorder,
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: "right",
+                    labels: { color: themeColors.textColor }
+                }
+            }
+        }
+    }) : null;
+
+    /* ================= APPLICATION UNIVERSITY ================= */
+    const applicationUniversityEl = document.getElementById("applicationUniversityChart");
+    const applicationUniversityChart = applicationUniversityEl ? new Chart(applicationUniversityEl, {
+        type: "bar",
+        data: {
+            labels: applicationUniversity.map(item => item.label),
+            datasets: [{
+                label: "Applications",
+                data: applicationUniversity.map(item => item.value),
+                backgroundColor: "#0284c7",
+                borderRadius: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            indexAxis: "y",
+            scales: {
+                x: {
+                    beginAtZero: true,
+                    ticks: { color: themeColors.textColor },
+                    grid: { color: themeColors.gridColor }
+                },
+                y: {
+                    ticks: { color: themeColors.textColor },
+                    grid: { display: false }
+                }
+            },
+            plugins: {
+                legend: {
+                    labels: { color: themeColors.textColor }
+                }
+            }
+        }
+    }) : null;
+
+    /* ================= ADMISSION STATUS ================= */
+    const admissionStatusEl = document.getElementById("admissionStatusChart");
+    const admissionStatusChart = admissionStatusEl ? new Chart(admissionStatusEl, {
+        type: "doughnut",
+        data: {
+            labels: admissionStatus.map(item => item.label),
+            datasets: [{
+                data: admissionStatus.map(item => item.value),
+                backgroundColor: slicePalette,
+                borderColor: themeColors.sliceBorder,
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: "right",
+                    labels: { color: themeColors.textColor }
+                }
+            }
+        }
+    }) : null;
+
+    /* ================= ADMISSION UNIVERSITY ================= */
+    const admissionUniversityEl = document.getElementById("admissionUniversityChart");
+    const admissionUniversityChart = admissionUniversityEl ? new Chart(admissionUniversityEl, {
+        type: "bar",
+        data: {
+            labels: admissionUniversity.map(item => item.label),
+            datasets: [{
+                label: "Admissions",
+                data: admissionUniversity.map(item => item.value),
+                backgroundColor: "#10b981",
+                borderRadius: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            indexAxis: "y",
+            scales: {
+                x: {
+                    beginAtZero: true,
+                    ticks: { color: themeColors.textColor },
+                    grid: { color: themeColors.gridColor }
+                },
+                y: {
+                    ticks: { color: themeColors.textColor },
+                    grid: { display: false }
+                }
+            },
+            plugins: {
+                legend: {
+                    labels: { color: themeColors.textColor }
+                }
+            }
+        }
+    }) : null;
+
+    /* ================= LISTEN FOR THEME CHANGE ================= */
+    window.addEventListener("alp-theme-change", function () {
+        const c = getThemeColors();
+        Chart.defaults.color = c.textColor;
+        Chart.defaults.borderColor = c.gridColor;
+
+        const doughnutPieCharts = [leadStatusChart, leadSourceChart, applicationStatusChart, admissionStatusChart];
+        doughnutPieCharts.forEach(ch => {
+            if (ch) {
+                ch.data.datasets.forEach(ds => ds.borderColor = c.sliceBorder);
+                if (ch.options.plugins && ch.options.plugins.legend && ch.options.plugins.legend.labels) {
+                    ch.options.plugins.legend.labels.color = c.textColor;
+                }
+                ch.update();
+            }
+        });
+
+        const barCharts = [counsellorChart, partnerChart, applicationUniversityChart, admissionUniversityChart];
+        barCharts.forEach(ch => {
+            if (ch) {
+                if (ch.options.scales && ch.options.scales.x) {
+                    if (ch.options.scales.x.ticks) ch.options.scales.x.ticks.color = c.textColor;
+                    if (ch.options.scales.x.grid && ch.options.scales.x.grid.display !== false) {
+                        ch.options.scales.x.grid.color = c.gridColor;
+                    }
+                }
+                if (ch.options.scales && ch.options.scales.y) {
+                    if (ch.options.scales.y.ticks) ch.options.scales.y.ticks.color = c.textColor;
+                    if (ch.options.scales.y.grid && ch.options.scales.y.grid.display !== false) {
+                        ch.options.scales.y.grid.color = c.gridColor;
+                    }
+                }
+                if (ch.options.plugins && ch.options.plugins.legend && ch.options.plugins.legend.labels) {
+                    ch.options.plugins.legend.labels.color = c.textColor;
+                }
+                ch.update();
+            }
+        });
+    });
+
+});
+
+</script>
+
+{% endblock %}

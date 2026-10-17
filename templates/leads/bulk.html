@@ -1,0 +1,22 @@
+{% extends 'base.html' %}{% block title %}Review bulk action{% endblock %}{% block content %}<nav aria-label="Breadcrumb">
+<a href="{% url 'leads:list' %}">Leads</a> / Review bulk action</nav>
+<div class="page-heading mt-3">
+<div>
+<h1>Review before applying.</h1>
+<p>This operation affects {{ selected|length }} selected lead{{ selected|length|pluralize }}. Every change is audited.</p>
+</div>
+</div>
+<div class="lead-history-grid">
+<section class="panel">
+<h2>Selected leads</h2>
+<ul class="mt-3">{% for lead in selected %}<li>{{ lead.full_name }} &middot; {{ lead.get_status_display }}</li>{% endfor %}</ul>
+<p class="text-secondary">The entire operation is cancelled if any selection or transition is not permitted.</p>
+</section>
+<section class="panel">
+<form method="post">{% csrf_token %}<input type="hidden" name="confirm" value="yes">{{ form.non_field_errors }}{% for field in form %}{% if field.is_hidden %}{{ field }}{{ field.errors }}{% else %}<div class="field-row">
+<label for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}{{ field.errors }}</div>{% endif %}{% endfor %}<p class="text-secondary">Assignment fields apply to assignment actions; status and note apply to status actions.</p>
+<button class="btn btn-primary" type="submit">Confirm and apply</button>
+<a class="btn btn-outline-secondary" href="{% url 'leads:list' %}">Cancel</a>
+</form>
+</section>
+</div>{% endblock %}

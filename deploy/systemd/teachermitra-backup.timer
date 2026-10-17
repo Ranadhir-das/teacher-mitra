@@ -1,0 +1,11 @@
+# Enable only after approving the recurring maintenance window and testing restore.
+[Unit]
+Description=TeacherMitra nightly backup
+
+[Timer]
+OnCalendar=*-*-* 02:30:00 UTC
+Persistent=true
+Unit=teachermitra-backup.service
+
+[Install]
+WantedBy=timers.target

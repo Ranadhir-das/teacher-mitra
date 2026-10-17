@@ -1,0 +1,1 @@
+<section class="panel mb-4"><h2>Recent activity</h2><div class="timeline">{% for item in recent_activity %}<article><a href="{{ item.url }}">{{ item.title }}</a><p>{{ item.at }} &middot; {{ item.actor }}</p></article>{% empty %}<p>No recent activity.</p>{% endfor %}</div></section>

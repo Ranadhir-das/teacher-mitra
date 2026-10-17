@@ -1,0 +1,33 @@
+# Template assumes the documented paths and teachermitra service user.
+[Unit]
+Description=TeacherMitra Django CRM
+After=network.target postgresql.service
+StartLimitIntervalSec=60
+StartLimitBurst=5
+
+[Service]
+Type=simple
+User=teachermitra
+Group=teachermitra
+WorkingDirectory=/srv/teachermitra/current
+EnvironmentFile=/etc/teachermitra/teachermitra.env
+Environment=PYTHONUNBUFFERED=1
+Environment=PYTHONDONTWRITEBYTECODE=1
+ExecStart=/srv/teachermitra/current/.venv/bin/gunicorn --config deploy/gunicorn.conf.py config.wsgi:application
+Restart=on-failure
+RestartSec=5
+TimeoutStopSec=45
+KillSignal=SIGTERM
+UMask=0027
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/teachermitra
+RestrictSUIDSGID=true
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=teachermitra
+
+[Install]
+WantedBy=multi-user.target

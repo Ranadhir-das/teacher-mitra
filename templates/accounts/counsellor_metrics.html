@@ -1,0 +1,124 @@
+<section class="panel mb-4">
+    <div class="section-heading">
+        <div>
+            <h2>Performance Snapshot</h2>
+            <p class="text-secondary mb-0">
+                Current performance across your assigned leads and student journeys.
+            </p>
+        </div>
+    </div>
+
+    <div class="metrics">
+        <div class="metric-card">
+            <span>Assigned Leads</span>
+            <strong>{{ performance.assigned_leads }}</strong>
+        </div>
+
+        <div class="metric-card">
+            <span>Contacted</span>
+            <strong>{{ performance.contacted_leads }}</strong>
+            <small>{{ performance.contacted_rate }}% of leads</small>
+        </div>
+
+        <div class="metric-card">
+            <span>Interested</span>
+            <strong>{{ performance.interested_leads }}</strong>
+            <small>{{ performance.interested_rate }}% of contacted</small>
+        </div>
+
+        <div class="metric-card">
+            <span>Applications</span>
+            <strong>{{ performance.applications }}</strong>
+            <small>{{ performance.application_rate }}% conversion</small>
+        </div>
+
+        <div class="metric-card">
+            <span>Admissions</span>
+            <strong>{{ performance.confirmed_admissions }}</strong>
+            <small>{{ performance.admission_rate }}% of applications</small>
+        </div>
+
+        <div class="metric-card">
+            <span>Completed Follow-ups</span>
+            <strong>{{ performance.completed_followups }}</strong>
+        </div>
+
+        <div class="metric-card">
+            <span>Overdue Follow-ups</span>
+            <strong>{{ performance.overdue_followups }}</strong>
+        </div>
+
+        <div class="metric-card">
+            <span>Overall Conversion</span>
+            <strong>{{ performance.conversion_rate }}%</strong>
+            <small>Lead → Admission</small>
+        </div>
+    </div>
+</section>
+
+<section class="panel mb-4">
+    <div class="section-heading">
+        <div>
+            <h2>Conversion Funnel</h2>
+            <p class="text-secondary mb-0">
+                Student journey from lead to confirmed admission.
+            </p>
+        </div>
+    </div>
+
+    <div class="status-chart mt-3">
+
+        <div class="chart-row">
+            <span>Assigned Leads</span>
+            <div class="chart-track">
+                <div class="chart-bar" style="width: 100%"></div>
+            </div>
+            <strong>{{ performance.assigned_leads }}</strong>
+        </div>
+
+        <div class="chart-row">
+            <span>Contacted</span>
+            <div class="chart-track">
+                <div
+                    class="chart-bar"
+                    style="width: {{ performance.contacted_rate }}%"
+                ></div>
+            </div>
+            <strong>{{ performance.contacted_leads }}</strong>
+        </div>
+
+        <div class="chart-row">
+            <span>Interested</span>
+            <div class="chart-track">
+                <div
+                    class="chart-bar"
+                    style="width: {{ performance.interested_rate }}%"
+                ></div>
+            </div>
+            <strong>{{ performance.interested_leads }}</strong>
+        </div>
+
+        <div class="chart-row">
+            <span>Application</span>
+            <div class="chart-track">
+                <div
+                    class="chart-bar"
+                    style="width: {{ performance.application_rate }}%"
+                ></div>
+            </div>
+            <strong>{{ performance.application_leads }}</strong>
+        </div>
+
+        <div class="chart-row">
+            <span>Admission</span>
+            <div class="chart-track">
+                <div
+                    class="chart-bar"
+                    style="width: {{ performance.conversion_rate }}%"
+                ></div>
+            </div>
+            <strong>{{ performance.confirmed_admissions }}</strong>
+        </div>
+
+    </div>
+</section>
