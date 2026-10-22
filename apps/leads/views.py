@@ -1,18 +1,27 @@
+import csv
+
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.core.paginator import Paginator
-from django.http import Http404
+from django.http import Http404, HttpResponseBadRequest, StreamingHttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.utils import timezone
 from django.views.decorators.http import require_http_methods
 from . import services
 from .filters import filter_leads
 from .forms import LeadForm, AssignmentForm, StatusForm, NoteForm, ArchiveForm, BulkForm, TagForm, SECTIONS
+from .csv_utils import safe_csv_cell
 from .models import Lead, Tag
 from .permissions import manageable_leads, visible_leads, optimized, can_create, can_assign, can_archive, is_admin
 
 from apps.followups.models import FollowUp
 from .activity import build_lead_activity
+
+
+class _CSVBuffer:
+    def write(self, value):
+        return value
 
 
 def get_lead(actor, pk):
@@ -39,8 +48,56 @@ def lead_list(request, students=False):
     page = Paginator(optimized(queryset), page_size).get_page(request.GET.get("page"))
     query = request.GET.copy()
     query.pop("page", None)
+    export_query = query.copy()
+    if students:
+        export_query["students"] = "1"
     return render(request, "leads/list.html", {"page_obj": page, "filter_form": form, "query": query.urlencode(),
-        "students": students, "can_create": can_create(request.user), "can_assign": can_assign(request.user), "is_admin": is_admin(request.user)})
+        "export_query": export_query.urlencode(), "students": students, "can_create": can_create(request.user),
+        "can_assign": can_assign(request.user), "is_admin": is_admin(request.user)})
+
+
+@login_required
+def lead_export(request):
+    students = request.GET.get("students") == "1"
+    queryset = visible_leads(request.user)
+    if students:
+        queryset = queryset.filter(status=Lead.Status.ADMISSION_CONFIRMED)
+    queryset, form = filter_leads(queryset, request.GET, request.user)
+    if not form.is_valid():
+        return HttpResponseBadRequest("Please correct the filters before downloading.")
+    queryset = queryset.select_related("selected_course", "partner", "assigned_counsellor")
+
+    def rows():
+        writer = csv.writer(_CSVBuffer())
+        yield "\ufeff" + writer.writerow([
+            "Lead ID", "Student", "Phone", "Email", "Status", "Priority", "Source",
+            "Course", "Partner", "Counsellor", "City", "State", "Created", "Last updated", "Record status",
+        ])
+        for lead in queryset.iterator(chunk_size=500):
+            yield writer.writerow([
+                lead.pk,
+                safe_csv_cell(lead.full_name),
+                safe_csv_cell(lead.phone),
+                safe_csv_cell(lead.email),
+                safe_csv_cell(lead.get_status_display()),
+                safe_csv_cell(lead.get_priority_display()),
+                safe_csv_cell(lead.get_lead_source_display()),
+                safe_csv_cell(lead.desired_course or (lead.selected_course.name if lead.selected_course_id else "")),
+                safe_csv_cell(lead.partner.business_name if lead.partner_id else ""),
+                safe_csv_cell(lead.assigned_counsellor.name if lead.assigned_counsellor_id else ""),
+                safe_csv_cell(lead.city),
+                safe_csv_cell(lead.state),
+                timezone.localtime(lead.created_at).isoformat(),
+                timezone.localtime(lead.updated_at).isoformat(),
+                "Active" if lead.is_active else "Archived",
+            ])
+
+    filename = "students.csv" if students else "leads.csv"
+    response = StreamingHttpResponse(rows(), content_type="text/csv; charset=utf-8")
+    response["Content-Disposition"] = f'attachment; filename="{filename}"'
+    response["X-Content-Type-Options"] = "nosniff"
+    response["Cache-Control"] = "private, no-store"
+    return response
 
 
 @login_required

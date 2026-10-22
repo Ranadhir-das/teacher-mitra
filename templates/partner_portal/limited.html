@@ -1,2 +1,86 @@
-{% extends 'partner_portal/base.html' %}{% block title %}Partner onboarding{% endblock %}{% block portal_content %}<div class="page-heading"><div><span class="eyebrow">WELCOME, {{ partner.contact_person }}</span><h1>&#x1F4CB; Complete your onboarding</h1><p>Your account is ready. Complete your profile and documents to request full partner access.</p></div><span class="soft-badge">{{ partner.get_status_display }}</span></div>
-<section class="panel"><h2>Onboarding progress &middot; {{ progress.percent }}%</h2><div class="progress my-3" role="progressbar" aria-valuenow="{{ progress.percent }}" aria-valuemin="0" aria-valuemax="100"><div class="progress-bar" style="width:{{ progress.percent }}%">{{ progress.percent }}%</div></div>{% if partner.review_feedback %}<div class="alert alert-info">{{ partner.review_feedback|linebreaksbr }}</div>{% endif %}{% if partner.status == 'SUBMITTED' %}<p>Your submission is with our administrators. Your profile and documents are locked during review.</p>{% elif partner.status == 'REJECTED' %}<p>Your application was rejected. Contact the administrator if you believe this decision needs review.</p>{% else %}<p>Save your progress at any time. Lead submission and reports become available after administrator approval.</p>{% endif %}<a class="btn btn-primary" href="{% url 'partner-portal:onboarding' %}">View / complete onboarding</a></section>{% endblock %}
+{% extends 'partner_portal/base.html' %}{% block title %}Partner onboarding{% endblock %}{% block portal_content %}
+<div class="page-heading">
+  <div>
+    <span class="eyebrow">WELCOME, {{ partner.contact_person }}</span>
+    <h1>Complete your onboarding</h1>
+    <p>Your account is ready. Complete your profile and documents to request full partner access.</p>
+  </div>
+  <span class="status-badge status-{{ partner.status|lower }}">{{ partner.get_status_display }}</span>
+</div>
+
+<section class="panel onboarding-progress-panel">
+  <div class="onboarding-progress-header">
+    <h2>Onboarding progress</h2>
+    <span class="progress-percent">{{ progress.percent }}%</span>
+  </div>
+
+  <div class="progress my-3" role="progressbar"
+       aria-valuenow="{{ progress.percent }}" aria-valuemin="0" aria-valuemax="100">
+    <div class="progress-bar {% if progress.percent == 100 %}bg-success{% endif %}"
+         style="width:{{ progress.percent }}%">
+      {{ progress.percent }}%
+    </div>
+  </div>
+
+  {% if partner.review_feedback %}
+  <div class="alert alert-info">
+    <strong>Administrator feedback:</strong><br>
+    {{ partner.review_feedback|linebreaksbr }}
+  </div>
+  {% endif %}
+
+  {% if partner.status == 'SUBMITTED' %}
+  <div class="onboarding-status-message status-submitted">
+    {% include "components/icon.html" with name="check" class="status-msg-icon" %}
+    <div>
+      <strong>Submission received</strong>
+      <p>Your submission is with our administrators. Your profile and documents are locked during review.</p>
+    </div>
+  </div>
+  {% elif partner.status == 'REJECTED' %}
+  <div class="onboarding-status-message status-rejected">
+    {% include "components/icon.html" with name="alert" class="status-msg-icon" %}
+    <div>
+      <strong>Application rejected</strong>
+      <p>Contact the administrator if you believe this decision needs review.</p>
+    </div>
+  </div>
+  {% elif partner.status == 'CHANGES_REQUIRED' %}
+  <div class="onboarding-status-message status-changes">
+    {% include "components/icon.html" with name="edit" class="status-msg-icon" %}
+    <div>
+      <strong>Changes requested</strong>
+      <p>Please review the administrator feedback above and update your information accordingly.</p>
+    </div>
+  </div>
+  {% else %}
+  <p class="text-muted">Save your progress at any time. Lead submission and reports become available after administrator approval.</p>
+  {% endif %}
+
+  {% if progress.missing_fields %}
+  <div class="onboarding-checklist mt-3">
+    <strong>Remaining fields:</strong>
+    <ul>
+      {% for field in progress.missing_fields %}
+      <li>{{ field|title }}</li>
+      {% endfor %}
+    </ul>
+  </div>
+  {% endif %}
+
+  {% if progress.missing_documents %}
+  <div class="onboarding-checklist mt-2">
+    <strong>Remaining documents:</strong>
+    <ul>
+      {% for doc in progress.missing_documents %}
+      <li>{{ doc }}</li>
+      {% endfor %}
+    </ul>
+  </div>
+  {% endif %}
+
+  <a class="btn btn-primary mt-3" href="{% url 'partner-portal:onboarding' %}">
+    {% if partner.status == 'SUBMITTED' %}View onboarding details{% else %}View / complete onboarding{% endif %}
+  </a>
+</section>
+{% endblock %}

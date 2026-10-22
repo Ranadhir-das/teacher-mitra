@@ -1,654 +1,111 @@
 {% extends "base.html" %}
-
 {% block title %}Reports & Analytics{% endblock %}
-
+{% block extra_head %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% endblock %}
 {% block content %}
-
-<div class="container-fluid py-4">
-
-    <!-- Header -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h2 class="fw-bold mb-1">Reports & Analytics</h2>
-            <p class="text-muted mb-0">
-                Monitor leads, counsellor performance, partners, applications and admissions.
-            </p>
-        </div>
-    </div>
-
-
-    <!-- ================= LEAD ANALYTICS ================= -->
-
-    <div class="mb-4">
-        <h4 class="fw-bold mb-3">Lead Analytics</h4>
-
-        <div class="row g-4">
-
-            <!-- Lead Status -->
-            <div class="col-lg-6">
-                <div class="card shadow-sm border-0 h-100">
-                    <div class="card-body">
-
-                        <h5 class="fw-semibold mb-3">
-                            Leads by Status
-                        </h5>
-
-                        <div style="height:320px;">
-                            <canvas id="leadStatusChart"></canvas>
-                        </div>
-
-                    </div>
-                </div>
-            </div>
-
-
-            <!-- Lead Source -->
-            <div class="col-lg-6">
-                <div class="card shadow-sm border-0 h-100">
-                    <div class="card-body">
-
-                        <h5 class="fw-semibold mb-3">
-                            Leads by Source
-                        </h5>
-
-                        <div style="height:320px;">
-                            <canvas id="leadSourceChart"></canvas>
-                        </div>
-
-                    </div>
-                </div>
-            </div>
-
-        </div>
-    </div>
-
-
-    <!-- ================= COUNSELLOR PERFORMANCE ================= -->
-
-    <div class="mb-4">
-
-        <h4 class="fw-bold mb-3">
-            Counsellor Performance
-        </h4>
-
-        <div class="card shadow-sm border-0">
-
-            <div class="card-body">
-
-                <div style="height:380px;">
-                    <canvas id="counsellorChart"></canvas>
-                </div>
-
-            </div>
-
-        </div>
-
-    </div>
-
-
-    <!-- ================= PARTNER PERFORMANCE ================= -->
-
-    <div class="mb-4">
-
-        <h4 class="fw-bold mb-3">
-            Partner Performance
-        </h4>
-
-        <div class="card shadow-sm border-0">
-
-            <div class="card-body">
-
-                <div style="height:380px;">
-                    <canvas id="partnerChart"></canvas>
-                </div>
-
-            </div>
-
-        </div>
-
-    </div>
-
-
-    <!-- ================= APPLICATION ANALYTICS ================= -->
-
-    <div class="mb-4">
-
-        <h4 class="fw-bold mb-3">
-            Application Analytics
-        </h4>
-
-        <div class="row g-4">
-
-            <!-- Application Status -->
-            <div class="col-lg-6">
-
-                <div class="card shadow-sm border-0 h-100">
-
-                    <div class="card-body">
-
-                        <h5 class="fw-semibold mb-3">
-                            Applications by Status
-                        </h5>
-
-                        <div style="height:320px;">
-                            <canvas id="applicationStatusChart"></canvas>
-                        </div>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-
-            <!-- Applications by University -->
-            <div class="col-lg-6">
-
-                <div class="card shadow-sm border-0 h-100">
-
-                    <div class="card-body">
-
-                        <h5 class="fw-semibold mb-3">
-                            Applications by University
-                        </h5>
-
-                        <div style="height:320px;">
-                            <canvas id="applicationUniversityChart"></canvas>
-                        </div>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-        </div>
-
-    </div>
-
-
-    <!-- ================= ADMISSION ANALYTICS ================= -->
-
-    <div class="mb-4">
-
-        <h4 class="fw-bold mb-3">
-            Admission Analytics
-        </h4>
-
-        <div class="row g-4">
-
-            <!-- Admission Status -->
-            <div class="col-lg-6">
-
-                <div class="card shadow-sm border-0 h-100">
-
-                    <div class="card-body">
-
-                        <h5 class="fw-semibold mb-3">
-                            Admissions by Status
-                        </h5>
-
-                        <div style="height:320px;">
-                            <canvas id="admissionStatusChart"></canvas>
-                        </div>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-
-            <!-- Admission University -->
-            <div class="col-lg-6">
-
-                <div class="card shadow-sm border-0 h-100">
-
-                    <div class="card-body">
-
-                        <h5 class="fw-semibold mb-3">
-                            Admissions by University
-                        </h5>
-
-                        <div style="height:320px;">
-                            <canvas id="admissionUniversityChart"></canvas>
-                        </div>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-        </div>
-
-    </div>
-
-
-    <!-- ================= EXACT NUMBERS ================= -->
-
-    <div class="mb-5">
-
-        <h4 class="fw-bold mb-3">
-            Report Summary
-        </h4>
-
-        <div class="row g-4">
-
-            <div class="col-md-4">
-                <div class="card border-0 shadow-sm">
-                    <div class="card-body">
-                        <h6 class="text-muted">Total Leads</h6>
-                        <h2 class="fw-bold">
-                            {{ lead_report.total }}
-                        </h2>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-md-4">
-                <div class="card border-0 shadow-sm">
-                    <div class="card-body">
-                        <h6 class="text-muted">Total Applications</h6>
-                        <h2 class="fw-bold">
-                            {{ application_report.total }}
-                        </h2>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-md-4">
-                <div class="card border-0 shadow-sm">
-                    <div class="card-body">
-                        <h6 class="text-muted">Total Admissions</h6>
-                        <h2 class="fw-bold">
-                            {{ admission_report.total }}
-                        </h2>
-                    </div>
-                </div>
-            </div>
-
-        </div>
-
-    </div>
-
+<div class="page-heading">
+  <div><span class="eyebrow">WORKSPACE INSIGHTS</span><h1>Reports &amp; Analytics</h1>
+    <p>Explore lead, application, and partner activity across your workspace.</p></div>
+  <a class="btn btn-outline-primary" href="{% url 'reports:leads-csv' %}{% if request.GET.urlencode %}?{{ request.GET.urlencode }}{% endif %}">Export report <span aria-hidden="true">↓</span></a>
 </div>
 
+<section class="panel report-filter-panel mb-4">
+  <div class="report-filter-heading"><div><span class="filter-overline">REFINE YOUR VIEW</span><h2>Report filters</h2></div><span class="filter-match-count">{{ lead_report.total }} matching lead{{ lead_report.total|pluralize }}</span></div>
+  <form method="get" class="report-filter-form" aria-label="Report filters">
+    <div class="report-filter-field"><label for="report-start">From date</label><input id="report-start" class="form-control" type="date" name="start_date" value="{{ start_date|date:'Y-m-d' }}"></div>
+    <div class="report-filter-field"><label for="report-end">To date</label><input id="report-end" class="form-control" type="date" name="end_date" value="{{ end_date|date:'Y-m-d' }}"></div>
+    <div class="report-filter-field"><label for="report-status">Lead status</label><select id="report-status" name="status" class="form-select"><option value="">All statuses</option>{% for value, label in status_choices %}<option value="{{ value }}" {% if selected_status == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></div>
+    <div class="report-filter-field"><label for="report-sort">Sort by</label><select id="report-sort" name="sort" class="form-select">{% for value, label in sort_choices %}<option value="{{ value }}" {% if selected_sort == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></div>
+    <div class="report-filter-actions"><button class="btn btn-primary" type="submit">Apply filters <span aria-hidden="true">→</span></button><a class="btn btn-light" href="{% url 'reports:dashboard' %}">Reset</a></div>
+  </form>
+  {% for error in filter_errors %}<div class="alert alert-warning mt-3 mb-0">{{ error }}</div>{% endfor %}
+</section>
 
-<!-- Chart.js -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<section class="metrics mb-4">
+  <article class="metric-card"><span class="metric-label">Leads</span><strong class="metric-value">{{ lead_report.total }}</strong><small class="metric-note">Matching current filters</small></article>
+  <article class="metric-card"><span class="metric-label">Applications</span><strong class="metric-value">{{ application_report.total }}</strong><small class="metric-note">Linked to filtered leads</small></article>
+  <article class="metric-card"><span class="metric-label">Confirmed admissions</span><strong class="metric-value">{{ admission_report.confirmed }}</strong><small class="metric-note">Linked to filtered leads</small></article>
+</section>
 
+{{ lead_report.by_status|json_script:"report-status-data" }}
+{{ lead_report.by_source|json_script:"report-source-data" }}
+{{ lead_trend_data|json_script:"report-trend-data" }}
+<div class="report-chart-grid mb-4">
+  <section class="panel report-chart-panel report-chart-wide">
+    <div class="report-chart-heading"><div><span class="chart-kicker">LEAD ACTIVITY</span><h2>New leads over time</h2></div><span class="chart-context">Monthly trend · up to 12 months</span></div>
+    <div class="report-chart-canvas"><canvas id="reportTrendChart" role="img" aria-label="Monthly new lead trend"></canvas></div>
+    <p class="chart-empty" hidden>No lead activity matches these filters.</p>
+  </section>
+  <section class="panel report-chart-panel">
+    <div class="report-chart-heading"><div><span class="chart-kicker">PIPELINE</span><h2>Leads by status</h2></div></div>
+    <div class="report-chart-canvas report-chart-donut"><canvas id="reportStatusChart" role="img" aria-label="Lead distribution by status"></canvas></div>
+    <p class="chart-empty" hidden>No lead activity matches these filters.</p>
+  </section>
+  <section class="panel report-chart-panel">
+    <div class="report-chart-heading"><div><span class="chart-kicker">ACQUISITION</span><h2>Lead sources</h2></div></div>
+    <div class="report-chart-canvas report-chart-bars"><canvas id="reportSourceChart" role="img" aria-label="Leads grouped by source"></canvas></div>
+    <p class="chart-empty" hidden>No lead activity matches these filters.</p>
+  </section>
+</div>
 
-<!-- Django JSON Data -->
+<div class="dashboard-charts mb-4">
+  <section class="panel"><h2>Leads by status</h2><div class="table-responsive"><table class="table"><thead><tr><th>Status</th><th>Leads</th></tr></thead><tbody>{% for row in lead_report.by_status %}<tr><td>{{ row.label }}</td><td>{{ row.value }}</td></tr>{% empty %}<tr><td colspan="2">No leads match these filters.</td></tr>{% endfor %}</tbody></table></div></section>
+  <section class="panel"><h2>Leads by source</h2><div class="table-responsive"><table class="table"><thead><tr><th>Source</th><th>Leads</th></tr></thead><tbody>{% for row in lead_report.by_source %}<tr><td>{{ row.label }}</td><td>{{ row.value }}</td></tr>{% empty %}<tr><td colspan="2">No leads match these filters.</td></tr>{% endfor %}</tbody></table></div></section>
+</div>
 
-{{ lead_report.by_status|json_script:"lead-status-data" }}
-{{ lead_report.by_source|json_script:"lead-source-data" }}
+<section class="panel mb-4"><h2>Application status</h2><div class="table-responsive"><table class="table"><thead><tr><th>Status</th><th>Applications</th></tr></thead><tbody>{% for row in application_report.by_status %}<tr><td>{{ row.label }}</td><td>{{ row.value }}</td></tr>{% empty %}<tr><td colspan="2">No applications are linked to the filtered leads.</td></tr>{% endfor %}</tbody></table></div></section>
+<section class="panel mb-4"><h2>Admission status</h2><div class="table-responsive"><table class="table"><thead><tr><th>Status</th><th>Admissions</th></tr></thead><tbody>{% for row in admission_report.by_status %}<tr><td>{{ row.label }}</td><td>{{ row.value }}</td></tr>{% empty %}<tr><td colspan="2">No admissions are linked to the filtered leads.</td></tr>{% endfor %}</tbody></table></div></section>
 
-{{ counsellor_report|json_script:"counsellor-data" }}
+<div class="dashboard-charts mb-4">
+  <section class="panel"><h2>Counsellor performance</h2><div class="table-responsive"><table class="table"><thead><tr><th>Counsellor</th><th>Leads</th><th>Applications</th><th>Confirmed admissions</th></tr></thead><tbody>{% for row in counsellor_report %}<tr><td>{{ row.label }}</td><td>{{ row.leads }}</td><td>{{ row.applications }}</td><td>{{ row.admissions }}</td></tr>{% empty %}<tr><td colspan="4">No matching leads.</td></tr>{% endfor %}</tbody></table></div></section>
+  <section class="panel"><h2>Partner performance</h2><div class="table-responsive"><table class="table"><thead><tr><th>Partner</th><th>Leads</th><th>Applications</th><th>Confirmed admissions</th></tr></thead><tbody>{% for row in partner_report %}<tr><td>{{ row.label }}</td><td>{{ row.leads }}</td><td>{{ row.applications }}</td><td>{{ row.admissions }}</td></tr>{% empty %}<tr><td colspan="4">No partner referrals match these filters.</td></tr>{% endfor %}</tbody></table></div></section>
+</div>
 
-{{ partner_report|json_script:"partner-data" }}
+<section class="panel mb-4"><h2>Follow-up completion</h2><p class="mb-0">{{ followup_report.completed }} completed follow-ups; {{ followup_report.overdue }} overdue.</p></section>
 
-{{ application_report.by_status|json_script:"application-status-data" }}
-{{ application_report.by_university|json_script:"application-university-data" }}
+<div class="dashboard-charts mb-4">
+  <section class="panel"><h2>Partner onboarding</h2><div class="table-responsive"><table class="table"><thead><tr><th>Status</th><th>Partners</th></tr></thead><tbody>{% for row in onboarding_report.partners %}<tr><td>{{ row.label }}</td><td>{{ row.total }}</td></tr>{% empty %}<tr><td colspan="2">No partners in the selected report scope.</td></tr>{% endfor %}</tbody></table></div></section>
+  <section class="panel"><h2>Partner document verification</h2><div class="table-responsive"><table class="table"><thead><tr><th>Status</th><th>Documents</th></tr></thead><tbody>{% for row in onboarding_report.documents %}<tr><td>{{ row.label }}</td><td>{{ row.total }}</td></tr>{% empty %}<tr><td colspan="2">No partner documents in the selected report scope.</td></tr>{% endfor %}</tbody></table></div></section>
+</div>
 
-{{ admission_report.by_status|json_script:"admission-status-data" }}
-{{ admission_report.by_university|json_script:"admission-university-data" }}
-
-
+<section class="panel"><div class="section-heading"><h2>Matching leads</h2><span>{{ lead_report.total }} records</span></div>
+  <div class="table-responsive"><table class="table align-middle"><thead><tr><th>Student</th><th>Status</th><th>Source</th><th>Partner</th><th>Created</th></tr></thead><tbody>
+  {% for lead in lead_page %}<tr><td><a href="{% url 'leads:detail' lead.pk %}">{{ lead.full_name }}</a></td><td>{{ lead.get_status_display }}</td><td>{{ lead.get_lead_source_display }}</td><td>{{ lead.partner.business_name|default:'—' }}</td><td>{{ lead.created_at|date:'M j, Y' }}</td></tr>{% empty %}<tr><td colspan="5">No matching leads.</td></tr>{% endfor %}
+  </tbody></table></div>
+  {% if lead_page.has_other_pages %}<nav aria-label="Report pages" class="d-flex gap-2 align-items-center">{% if lead_page.has_previous %}<a class="btn btn-sm btn-outline-secondary" href="?{{ request.GET.urlencode }}{% if request.GET %}&amp;{% endif %}page={{ lead_page.previous_page_number }}">Previous</a>{% endif %}<span>Page {{ lead_page.number }} of {{ lead_page.paginator.num_pages }}</span>{% if lead_page.has_next %}<a class="btn btn-sm btn-outline-secondary" href="?{{ request.GET.urlencode }}{% if request.GET %}&amp;{% endif %}page={{ lead_page.next_page_number }}">Next</a>{% endif %}</nav>{% endif %}
+  <p class="text-muted mb-0 mt-2">Use the CSV export for the full filtered result.</p>
+</section>
 <script>
-
 document.addEventListener("DOMContentLoaded", function () {
-
-    function getData(id) {
-        const el = document.getElementById(id);
-        return el ? JSON.parse(el.textContent) : [];
+  const read = (id) => {
+    const node = document.getElementById(id);
+    return node ? JSON.parse(node.textContent) : [];
+  };
+  const status = read("report-status-data");
+  const sources = read("report-source-data");
+  const trend = read("report-trend-data");
+  const palette = ["#0284c7", "#38bdf8", "#6366f1", "#14b8a6", "#f59e0b", "#f97316", "#8b5cf6", "#ec4899", "#64748b", "#0ea5e9", "#84cc16"];
+  const chartOptions = { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { usePointStyle: true, boxWidth: 8, padding: 16 } } } };
+  const empty = (canvas, hasData) => {
+    if (!hasData && canvas) {
+      canvas.hidden = true;
+      const message = canvas.closest(".report-chart-panel").querySelector(".chart-empty");
+      if (message) message.hidden = false;
     }
-
-    const leadStatus = getData("lead-status-data");
-    const leadSource = getData("lead-source-data");
-    const counsellors = getData("counsellor-data");
-    const partners = getData("partner-data");
-    const applicationStatus = getData("application-status-data");
-    const applicationUniversity = getData("application-university-data");
-    const admissionStatus = getData("admission-status-data");
-    const admissionUniversity = getData("admission-university-data");
-
-    /* ================= THEME CONFIGURATION ================= */
-    function getThemeColors() {
-        const isDark = document.documentElement.dataset.bsTheme === 'dark';
-        return {
-            isDark: isDark,
-            sliceBorder: isDark ? '#1e293b' : '#ffffff',
-            gridColor: isDark ? '#334155' : '#e2e8f0',
-            textColor: isDark ? '#94a3b8' : '#64748b',
-            sky: isDark ? '#38bdf8' : '#0284c7',
-            skyLight: isDark ? '#7dd3fc' : '#38bdf8',
-            emerald: isDark ? '#34d399' : '#10b981'
-        };
-    }
-
-    const themeColors = getThemeColors();
-    Chart.defaults.color = themeColors.textColor;
-    Chart.defaults.borderColor = themeColors.gridColor;
-
-    const slicePalette = [
-        '#0284c7', '#0ea5e9', '#38bdf8', '#06b6d4',
-        '#10b981', '#f59e0b', '#8b5cf6', '#ec4899',
-        '#64748b', '#14b8a6', '#6366f1', '#f97316'
-    ];
-
-    /* ================= LEAD STATUS ================= */
-    const leadStatusEl = document.getElementById("leadStatusChart");
-    const leadStatusChart = leadStatusEl ? new Chart(leadStatusEl, {
-        type: "doughnut",
-        data: {
-            labels: leadStatus.map(item => item.label),
-            datasets: [{
-                data: leadStatus.map(item => item.value),
-                backgroundColor: slicePalette,
-                borderColor: themeColors.sliceBorder,
-                borderWidth: 2
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    position: "right",
-                    labels: { color: themeColors.textColor }
-                }
-            }
-        }
-    }) : null;
-
-    /* ================= LEAD SOURCE ================= */
-    const leadSourceEl = document.getElementById("leadSourceChart");
-    const leadSourceChart = leadSourceEl ? new Chart(leadSourceEl, {
-        type: "pie",
-        data: {
-            labels: leadSource.map(item => item.label),
-            datasets: [{
-                data: leadSource.map(item => item.value),
-                backgroundColor: slicePalette,
-                borderColor: themeColors.sliceBorder,
-                borderWidth: 2
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    position: "right",
-                    labels: { color: themeColors.textColor }
-                }
-            }
-        }
-    }) : null;
-
-    /* ================= COUNSELLORS ================= */
-    const counsellorEl = document.getElementById("counsellorChart");
-    const counsellorChart = counsellorEl ? new Chart(counsellorEl, {
-        type: "bar",
-        data: {
-            labels: counsellors.map(item => item.label),
-            datasets: [
-                {
-                    label: "Leads",
-                    data: counsellors.map(item => item.leads),
-                    backgroundColor: "#0284c7",
-                    borderRadius: 4
-                },
-                {
-                    label: "Applications",
-                    data: counsellors.map(item => item.applications),
-                    backgroundColor: "#38bdf8",
-                    borderRadius: 4
-                },
-                {
-                    label: "Admissions",
-                    data: counsellors.map(item => item.admissions),
-                    backgroundColor: "#10b981",
-                    borderRadius: 4
-                }
-            ]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: {
-                x: {
-                    ticks: { color: themeColors.textColor },
-                    grid: { display: false }
-                },
-                y: {
-                    beginAtZero: true,
-                    ticks: { color: themeColors.textColor },
-                    grid: { color: themeColors.gridColor }
-                }
-            },
-            plugins: {
-                legend: {
-                    labels: { color: themeColors.textColor }
-                }
-            }
-        }
-    }) : null;
-
-    /* ================= PARTNERS ================= */
-    const partnerEl = document.getElementById("partnerChart");
-    const partnerChart = partnerEl ? new Chart(partnerEl, {
-        type: "bar",
-        data: {
-            labels: partners.map(item => item.label),
-            datasets: [
-                {
-                    label: "Leads",
-                    data: partners.map(item => item.leads),
-                    backgroundColor: "#0284c7",
-                    borderRadius: 4
-                },
-                {
-                    label: "Applications",
-                    data: partners.map(item => item.applications),
-                    backgroundColor: "#38bdf8",
-                    borderRadius: 4
-                },
-                {
-                    label: "Admissions",
-                    data: partners.map(item => item.admissions),
-                    backgroundColor: "#10b981",
-                    borderRadius: 4
-                }
-            ]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: {
-                x: {
-                    ticks: { color: themeColors.textColor },
-                    grid: { display: false }
-                },
-                y: {
-                    beginAtZero: true,
-                    ticks: { color: themeColors.textColor },
-                    grid: { color: themeColors.gridColor }
-                }
-            },
-            plugins: {
-                legend: {
-                    labels: { color: themeColors.textColor }
-                }
-            }
-        }
-    }) : null;
-
-    /* ================= APPLICATION STATUS ================= */
-    const applicationStatusEl = document.getElementById("applicationStatusChart");
-    const applicationStatusChart = applicationStatusEl ? new Chart(applicationStatusEl, {
-        type: "doughnut",
-        data: {
-            labels: applicationStatus.map(item => item.label),
-            datasets: [{
-                data: applicationStatus.map(item => item.value),
-                backgroundColor: slicePalette,
-                borderColor: themeColors.sliceBorder,
-                borderWidth: 2
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    position: "right",
-                    labels: { color: themeColors.textColor }
-                }
-            }
-        }
-    }) : null;
-
-    /* ================= APPLICATION UNIVERSITY ================= */
-    const applicationUniversityEl = document.getElementById("applicationUniversityChart");
-    const applicationUniversityChart = applicationUniversityEl ? new Chart(applicationUniversityEl, {
-        type: "bar",
-        data: {
-            labels: applicationUniversity.map(item => item.label),
-            datasets: [{
-                label: "Applications",
-                data: applicationUniversity.map(item => item.value),
-                backgroundColor: "#0284c7",
-                borderRadius: 4
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            indexAxis: "y",
-            scales: {
-                x: {
-                    beginAtZero: true,
-                    ticks: { color: themeColors.textColor },
-                    grid: { color: themeColors.gridColor }
-                },
-                y: {
-                    ticks: { color: themeColors.textColor },
-                    grid: { display: false }
-                }
-            },
-            plugins: {
-                legend: {
-                    labels: { color: themeColors.textColor }
-                }
-            }
-        }
-    }) : null;
-
-    /* ================= ADMISSION STATUS ================= */
-    const admissionStatusEl = document.getElementById("admissionStatusChart");
-    const admissionStatusChart = admissionStatusEl ? new Chart(admissionStatusEl, {
-        type: "doughnut",
-        data: {
-            labels: admissionStatus.map(item => item.label),
-            datasets: [{
-                data: admissionStatus.map(item => item.value),
-                backgroundColor: slicePalette,
-                borderColor: themeColors.sliceBorder,
-                borderWidth: 2
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    position: "right",
-                    labels: { color: themeColors.textColor }
-                }
-            }
-        }
-    }) : null;
-
-    /* ================= ADMISSION UNIVERSITY ================= */
-    const admissionUniversityEl = document.getElementById("admissionUniversityChart");
-    const admissionUniversityChart = admissionUniversityEl ? new Chart(admissionUniversityEl, {
-        type: "bar",
-        data: {
-            labels: admissionUniversity.map(item => item.label),
-            datasets: [{
-                label: "Admissions",
-                data: admissionUniversity.map(item => item.value),
-                backgroundColor: "#10b981",
-                borderRadius: 4
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            indexAxis: "y",
-            scales: {
-                x: {
-                    beginAtZero: true,
-                    ticks: { color: themeColors.textColor },
-                    grid: { color: themeColors.gridColor }
-                },
-                y: {
-                    ticks: { color: themeColors.textColor },
-                    grid: { display: false }
-                }
-            },
-            plugins: {
-                legend: {
-                    labels: { color: themeColors.textColor }
-                }
-            }
-        }
-    }) : null;
-
-    /* ================= LISTEN FOR THEME CHANGE ================= */
-    window.addEventListener("alp-theme-change", function () {
-        const c = getThemeColors();
-        Chart.defaults.color = c.textColor;
-        Chart.defaults.borderColor = c.gridColor;
-
-        const doughnutPieCharts = [leadStatusChart, leadSourceChart, applicationStatusChart, admissionStatusChart];
-        doughnutPieCharts.forEach(ch => {
-            if (ch) {
-                ch.data.datasets.forEach(ds => ds.borderColor = c.sliceBorder);
-                if (ch.options.plugins && ch.options.plugins.legend && ch.options.plugins.legend.labels) {
-                    ch.options.plugins.legend.labels.color = c.textColor;
-                }
-                ch.update();
-            }
-        });
-
-        const barCharts = [counsellorChart, partnerChart, applicationUniversityChart, admissionUniversityChart];
-        barCharts.forEach(ch => {
-            if (ch) {
-                if (ch.options.scales && ch.options.scales.x) {
-                    if (ch.options.scales.x.ticks) ch.options.scales.x.ticks.color = c.textColor;
-                    if (ch.options.scales.x.grid && ch.options.scales.x.grid.display !== false) {
-                        ch.options.scales.x.grid.color = c.gridColor;
-                    }
-                }
-                if (ch.options.scales && ch.options.scales.y) {
-                    if (ch.options.scales.y.ticks) ch.options.scales.y.ticks.color = c.textColor;
-                    if (ch.options.scales.y.grid && ch.options.scales.y.grid.display !== false) {
-                        ch.options.scales.y.grid.color = c.gridColor;
-                    }
-                }
-                if (ch.options.plugins && ch.options.plugins.legend && ch.options.plugins.legend.labels) {
-                    ch.options.plugins.legend.labels.color = c.textColor;
-                }
-                ch.update();
-            }
-        });
+  };
+  if (typeof Chart === "undefined") {
+    document.querySelectorAll(".report-chart-canvas").forEach((node) => {
+      node.innerHTML = '<p class="chart-empty">Charts are unavailable. The filtered totals remain above.</p>';
     });
-
+    return;
+  }
+  const statusCanvas = document.getElementById("reportStatusChart");
+  if (status.length) new Chart(statusCanvas, { type: "doughnut", data: { labels: status.map((item) => item.label), datasets: [{ data: status.map((item) => item.value), backgroundColor: palette, borderColor: "#fff", borderWidth: 3, hoverOffset: 5 }] }, options: { ...chartOptions, cutout: "66%" } }); else empty(statusCanvas, false);
+  const sourceCanvas = document.getElementById("reportSourceChart");
+  if (sources.length) new Chart(sourceCanvas, { type: "bar", data: { labels: sources.map((item) => item.label), datasets: [{ data: sources.map((item) => item.value), backgroundColor: "rgba(2,132,199,.78)", borderRadius: 6, maxBarThickness: 22 }] }, options: { ...chartOptions, indexAxis: "y", plugins: { legend: { display: false } }, scales: { x: { beginAtZero: true, grid: { color: "#edf2f7" }, ticks: { precision: 0 } }, y: { grid: { display: false } } } } }); else empty(sourceCanvas, false);
+  const trendCanvas = document.getElementById("reportTrendChart");
+  if (trend.labels.length) new Chart(trendCanvas, { type: "line", data: { labels: trend.labels, datasets: [{ label: "New leads", data: trend.values, borderColor: "#0284c7", backgroundColor: "rgba(2,132,199,.12)", fill: true, tension: .35, pointRadius: 3, pointHoverRadius: 5, pointBackgroundColor: "#fff", pointBorderWidth: 2 }] }, options: { ...chartOptions, plugins: { legend: { display: false } }, scales: { x: { grid: { display: false } }, y: { beginAtZero: true, grid: { color: "#edf2f7" }, ticks: { precision: 0 } } } } }); else empty(trendCanvas, false);
 });
-
 </script>
-
 {% endblock %}

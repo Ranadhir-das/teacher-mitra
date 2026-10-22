@@ -82,7 +82,7 @@ class CounsellorTests(TestCase):
 
     def test_web_username_login(self):
         response = self.client.post(reverse("accounts:login"), {"username": "NORTH.USER", "password": PASSWORD})
-        self.assertRedirects(response, "/")
+        self.assertRedirects(response, reverse("dashboard:index"))
         self.assertEqual(int(self.client.session["_auth_user_id"]), self.worker.pk)
 
     def test_api_username_login_and_missing_identifier(self):
@@ -184,7 +184,7 @@ class CounsellorTests(TestCase):
             target = save_counsellor(self.admin, {"account_status": status}, pk=self.worker.pk)
             self.assertFalse(target.is_active)
             self.assertIsNone(authenticate(username=target.username, password=PASSWORD))
-            self.assertEqual(self.client.get("/").status_code, 302)
+            self.assertEqual(self.client.get(reverse("dashboard:index")).status_code, 302)
             api.credentials(HTTP_AUTHORIZATION="Bearer " + tokens["access"])
             self.assertEqual(api.get("/api/v1/auth/me/").status_code, 401)
             self.assertEqual(api.post("/api/v1/auth/refresh/", {"refresh": tokens["refresh"]}).status_code, 401)
@@ -210,7 +210,7 @@ class CounsellorTests(TestCase):
         target = reset_counsellor_password(self.admin, self.worker.pk, NEW_PASSWORD)
         self.assertTrue(target.check_password(NEW_PASSWORD))
         self.assertFalse(target.check_password(PASSWORD))
-        self.assertEqual(self.client.get("/").status_code, 302)
+        self.assertEqual(self.client.get(reverse("dashboard:index")).status_code, 302)
         api.credentials(HTTP_AUTHORIZATION="Bearer " + tokens["access"])
         self.assertEqual(api.get("/api/v1/auth/me/").status_code, 401)
         self.assertEqual(api.post("/api/v1/auth/refresh/", {"refresh": tokens["refresh"]}).status_code, 401)
@@ -291,7 +291,7 @@ class CounsellorTests(TestCase):
 
     def test_counsellor_dashboard_workload_and_recent_activity_isolation(self):
         self.client.force_login(self.worker)
-        response = self.client.get("/")
+        response = self.client.get(reverse("dashboard:index"))
         self.assertContains(response, "Today's follow-ups")
         self.assertContains(response, "Pending applications")
         self.assertContains(response, "Recent activity")

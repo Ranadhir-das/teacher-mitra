@@ -4,6 +4,7 @@ from . import views
 app_name = "leads"
 urlpatterns = [
     path("", views.lead_list, name="list"),
+    path("export/", views.lead_export, name="export"),
     path("new/", views.lead_edit, name="create"),
     path("bulk/", views.bulk_action, name="bulk"),
     path("tags/", views.tag_manage, name="tags"),

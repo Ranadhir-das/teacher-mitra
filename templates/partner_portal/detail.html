@@ -7,7 +7,7 @@
 <p>Submitted {{ lead.created_at|date:'d M Y' }} &middot; Updated {{ lead.updated_at|date:'d M Y' }}</p>
 </div>
 <span class="soft-badge">{{ lead.public_progress.label }}</span>
-</div>{% if can_edit %}<a class="btn btn-primary mb-4" href="{% url 'partner-portal:edit' lead.pk %}">Edit submitted information</a>{% else %}<p class="text-secondary">Contact Aspiring Life Partners if this referral needs a correction.</p>{% endif %}<section class="panel">
+</div>{% if can_edit %}<a class="btn btn-primary mb-4" href="{% url 'partner-portal:edit' lead.pk %}">Edit submitted information</a>{% else %}<p class="text-secondary">Contact TeacherMitra if this referral needs a correction.</p>{% endif %}<section class="panel">
 <h2 class="mb-4"><span aria-hidden="true">&#x1F393;</span> Student details &amp; requirements</h2>
 <dl class="detail-grid">{% for label, value in values %}<div>
 <dt>{{ label|capfirst }}</dt>

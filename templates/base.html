@@ -4,201 +4,194 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="light dark">
-<title>{% block title %}Workspace
-{% endblock %}
- &middot; Aspiring Life Partners</title>
+<title>{% block title %}Workspace{% endblock %} &middot; TeacherMitra CRM</title>
 <script src="{% static 'js/theme.js' %}?v=2"></script>
 <link href="{% static 'vendor/bootstrap.min.css' %}" rel="stylesheet">
-<link href="{% static 'css/app.css' %}?v=workspace-sky-1" rel="stylesheet">
+<link href="{% static 'css/app.css' %}?v=teachermitra-9" rel="stylesheet">
+{% block extra_head %}{% endblock %}
 </head>
 
 <body>{% block body %}
+<div class="workspace internal-workspace" id="workspace">
+<script>try{if(window.matchMedia('(min-width: 992px)').matches&&localStorage.getItem('tm-sidebar-collapsed')==='true')document.getElementById('workspace').classList.add('sidebar-collapsed')}catch(_){}</script>
 
-<div class="workspace internal-workspace">
+<div class="sidebar-backdrop" id="sidebar-backdrop" aria-hidden="true"></div>
 
 <aside class="sidebar" id="sidebar" aria-label="Primary navigation">
 
-<a class="brand" href="{% url 'dashboard:index' %}">
-<span class="brand-mark">a<span>lp</span>
-</span>
-<span>Aspiring<br>
-<strong>Life Partners</strong>
-</span>
-</a>
+<div class="sidebar-brand-wrap">
+  <a class="brand" href="{% url 'dashboard:index' %}">
+    <span class="brand-mark" aria-hidden="true">
+      <span class="brand-mark-letter">TM</span>
+    </span>
+    <span class="brand-text">
+      <span class="brand-title">TeacherMitra</span>
+      <span class="brand-subtitle">Education CRM</span>
+    </span>
+  </a>
+  <button class="btn btn-sm btn-icon sidebar-collapse-btn d-none d-lg-flex" id="sidebar-collapse-toggle" type="button" aria-label="Collapse sidebar" aria-expanded="true" title="Collapse sidebar">
+    {% include "components/icon.html" with name="collapse" class="nav-icon" %}
+  </button>
+</div>
 
-<div class="nav-label">WORKSPACE</div>
+<nav class="sidebar-nav">
+  <div class="nav-section">
+    <div class="nav-label">WORKSPACE</div>
+    <a class="nav-item {% if request.resolver_match.app_name == 'dashboard' %}selected{% endif %}"
+       href="{% url 'dashboard:index' %}" data-bs-toggle="tooltip" data-bs-placement="right" title="Dashboard">
+      {% include "components/icon.html" with name="dashboard" class="nav-icon" %}
+      <span class="nav-text">Dashboard</span>
+    </a>
 
-<nav>
+    <a class="nav-item {% if request.resolver_match.app_name == 'leads' %}selected{% endif %}"
+       href="{% url 'leads:list' %}" data-bs-toggle="tooltip" data-bs-placement="right" title="Leads">
+      {% include "components/icon.html" with name="leads" class="nav-icon" %}
+      <span class="nav-text">Leads</span>
+    </a>
 
-<a class="nav-item {% if request.resolver_match.app_name == 'dashboard' %}selected{% endif %}"
-   href="{% url 'dashboard:index' %}">
-<span aria-hidden="true">&#x1F3E0;</span> Dashboard</a>
+    <a class="nav-item {% if request.resolver_match.url_name == 'students' %}selected{% endif %}"
+       href="{% url 'students' %}" data-bs-toggle="tooltip" data-bs-placement="right" title="Students">
+      {% include "components/icon.html" with name="students" class="nav-icon" %}
+      <span class="nav-text">Students</span>
+    </a>
 
+    <a class="nav-item {% if request.resolver_match.app_name == 'applications' %}selected{% endif %}"
+       href="{% url 'applications:list' %}" data-bs-toggle="tooltip" data-bs-placement="right" title="Applications & Admissions">
+      {% include "components/icon.html" with name="applications" class="nav-icon" %}
+      <span class="nav-text">Applications &amp; Admissions</span>
+    </a>
+  </div>
 
-<a class="nav-item {% if request.resolver_match.app_name == 'leads' %}selected{% endif %}"
-   href="{% url 'leads:list' %}">
-<span aria-hidden="true">&#x1F4CB;</span> Leads</a>
+  {% if can_manage_employees %}
+  <div class="nav-section">
+    <div class="nav-label">PARTNER MANAGEMENT</div>
+    <a class="nav-item {% if request.resolver_match.app_name == 'partners' %}selected{% endif %}"
+       href="{% url 'partners:list' %}" data-bs-toggle="tooltip" data-bs-placement="right" title="Partners">
+      {% include "components/icon.html" with name="partners" class="nav-icon" %}
+      <span class="nav-text">Partners</span>
+    </a>
+  </div>
+  {% endif %}
 
+  <div class="nav-section">
+    <div class="nav-label">CATALOGUE</div>
+    <a class="nav-item {% if request.resolver_match.app_name == 'courses' or request.resolver_match.app_name == 'countries' or request.resolver_match.app_name == 'universities' %}selected{% endif %}"
+       href="{% url 'courses:list' %}" data-bs-toggle="tooltip" data-bs-placement="right" title="Courses & Universities">
+      {% include "components/icon.html" with name="courses" class="nav-icon" %}
+      <span class="nav-text">Courses &amp; Universities</span>
+    </a>
+  </div>
 
-<a class="nav-item {% if request.resolver_match.url_name == 'students' %}selected{% endif %}"
-   href="{% url 'students' %}">
-<span aria-hidden="true">&#x1F393;</span> Students</a>
+  <div class="nav-section">
+    <div class="nav-label">INSIGHTS</div>
+    <a class="nav-item {% if request.resolver_match.app_name == 'reports' %}selected{% endif %}"
+       href="{% url 'reports:dashboard' %}" data-bs-toggle="tooltip" data-bs-placement="right" title="Reports & Analytics">
+      {% include "components/icon.html" with name="reports" class="nav-icon" %}
+      <span class="nav-text">Reports &amp; Analytics</span>
+    </a>
+  </div>
 
-
-{% if can_manage_counsellors %}
-<a class="nav-item {% if request.resolver_match.app_name == 'accounts' %}selected{% endif %}"
-   href="{% url 'accounts:employee-list' %}">
-<span aria-hidden="true">&#x1F465;</span> Employees</a>
-{% endif %}
-
-
-{% if can_manage_employees %}
-<a class="nav-item {% if request.resolver_match.app_name == 'partners' %}selected{% endif %}"
-   href="{% url 'partners:list' %}">
-<span aria-hidden="true">&#x1F91D;</span> Partners</a>
-{% endif %}
-
-
-
-
-
-
-<a class="nav-item {% if request.resolver_match.app_name == 'courses' or request.resolver_match.app_name == 'countries' or request.resolver_match.app_name == 'universities' %}selected{% endif %}"
-   href="{% url 'courses:list' %}">
-<span aria-hidden="true">&#x1F4DA;</span> Courses</a>
-
-
-<a class="nav-item {% if request.resolver_match.app_name == 'applications' %}selected{% endif %}"
-   href="{% url 'applications:list' %}">
-<span aria-hidden="true">&#x1F4DD;</span> Applications &amp; Admissions</a>
-
-
-<!-- Reports -->
-<a class="nav-item {% if request.resolver_match.app_name == 'reports' %}selected{% endif %}"
-   href="{% url 'reports:dashboard' %}">
-<span aria-hidden="true">&#x1F4CA;</span> Reports</a>
-
-
-
-
-
+  {% if can_manage_counsellors %}
+  <div class="nav-section">
+    <div class="nav-label">ORGANIZATION</div>
+    <a class="nav-item {% if request.resolver_match.app_name == 'accounts' %}selected{% endif %}"
+       href="{% url 'accounts:employee-list' %}" data-bs-toggle="tooltip" data-bs-placement="right" title="Employees & Team">
+      {% include "components/icon.html" with name="employees" class="nav-icon" %}
+      <span class="nav-text">Employees</span>
+    </a>
+  </div>
+  {% endif %}
 </nav>
 
-
 <div class="sidebar-footer">
-
-<form method="post"
-      action="{% url 'accounts:logout' %}"
-      class="mb-3">
-{% csrf_token %}
-<button class="btn btn-outline-secondary w-100" type="submit">
-<span aria-hidden="true">&#x1F6AA;</span> Logout
-</button>
-</form>
-
-<span class="status-dot">
-</span> Foundation workspace
-
-<small>Education consultancy CRM</small>
-
+  <div class="user-pill mb-2">
+    <span class="avatar avatar-sm">{{ user.name|first|upper }}</span>
+    <div class="user-pill-info">
+      <span class="user-pill-name">{{ user.get_short_name }}</span>
+      <span class="user-pill-role badge-role">{{ user.get_role_display }}</span>
+    </div>
+  </div>
+  <form method="post" action="{% url 'accounts:logout' %}">
+    {% csrf_token %}
+    <button class="btn btn-outline-secondary btn-sm w-100 d-flex align-items-center justify-content-center gap-2" type="submit">
+      {% include "components/icon.html" with name="logout" class="nav-icon icon-sm" %}
+      <span class="nav-text">Logout</span>
+    </button>
+  </form>
+  <div class="sidebar-status-meta mt-2">
+    <span class="status-dot"></span> TeacherMitra CRM
+  </div>
 </div>
 
 </aside>
 
-
 <div class="main-area">
 
 <header class="topbar">
+  <div class="d-flex align-items-center gap-3">
+    <button class="btn btn-outline-secondary menu-toggle d-lg-none"
+            type="button"
+            id="menu-toggle"
+            aria-controls="sidebar"
+            aria-expanded="false"
+            aria-label="Toggle navigation">
+      {% include "components/icon.html" with name="menu" class="nav-icon" %}
+    </button>
+    <div class="topbar-context">
+      <span class="topbar-brand-hint">TeacherMitra</span>
+      <span class="topbar-divider">/</span>
+      <span class="topbar-label">
+        {% block topbar_title %}Education Consultancy Workspace{% endblock %}
+      </span>
+    </div>
+  </div>
 
-<div class="d-flex align-items-center gap-3">
+  <div class="topbar-actions">
+    {% include 'components/theme_toggle.html' %}
 
-<button class="btn btn-outline-secondary menu-toggle"
-        type="button"
-        id="menu-toggle"
-        aria-controls="sidebar"
-        aria-expanded="false"
-        aria-label="Toggle navigation">
-&#9776;
-</button>
+    <div class="dropdown">
+      <button class="profile-button dropdown-toggle"
+              data-bs-toggle="dropdown"
+              aria-expanded="false">
+        <span class="avatar">
+          {{ user.name|first|upper }}
+        </span>
+        <span class="d-none d-sm-inline-block text-start">
+          <span class="d-block fw-semibold text-truncate" style="max-width: 140px;">{{ user.get_short_name }}</span>
+          <small class="d-block text-secondary text-truncate" style="max-width: 140px;">{{ user.get_role_display }}</small>
+        </span>
+      </button>
 
-<span class="topbar-label">
-Your education consultancy workspace
-</span>
-
-</div>
-
-
-<div class="topbar-actions">
-
-{% include 'components/theme_toggle.html' %}
-
-<div class="dropdown">
-
-<button class="profile-button dropdown-toggle"
-        data-bs-toggle="dropdown"
-        aria-expanded="false">
-
-<span class="avatar">
-{{ user.name|first|upper }}
-</span>
-
-<span>
-{{ user.get_short_name }}
-<small>{{ user.get_role_display }}</small>
-</span>
-
-</button>
-
-
-<ul class="dropdown-menu dropdown-menu-end">
-
-<li>
-<span class="dropdown-item-text text-muted">
-{{ user.email }}
-</span>
-</li>
-
-<li>
-<hr class="dropdown-divider">
-</li>
-
-<li>
-
-<form method="post"
-      action="{% url 'accounts:logout' %}">
-{% csrf_token %}
-
-<button class="dropdown-item"
-        type="submit">
-Sign out
-</button>
-
-</form>
-
-</li>
-
-</ul>
-
-</div>
-
-</div>
-
+      <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0">
+        <li class="px-3 py-2 border-bottom">
+          <div class="fw-bold">{{ user.name }}</div>
+          <small class="text-muted text-break">{{ user.email }}</small>
+          <div class="mt-1"><span class="badge bg-primary-subtle text-primary border border-primary-subtle">{{ user.get_role_display }}</span></div>
+        </li>
+        <li>
+          <form method="post" action="{% url 'accounts:logout' %}" class="p-1">
+            {% csrf_token %}
+            <button class="dropdown-item d-flex align-items-center gap-2 rounded text-danger" type="submit">
+              {% include "components/icon.html" with name="logout" class="nav-icon icon-sm" %}
+              <span>Sign out</span>
+            </button>
+          </form>
+        </li>
+      </ul>
+    </div>
+  </div>
 </header>
 
-
 <main id="main-content" class="page-content">
-
-{% include 'components/messages.html' %}
-
-{% block content %}
-{% endblock %}
-
+  {% include 'components/messages.html' %}
+  {% block content %}{% endblock %}
 </main>
 
-
 <footer class="page-footer">
-Aspiring Life Partners
-<span>Built for meaningful student journeys.</span>
+  <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
+    <span>TeacherMitra CRM &middot; Dedicated to Student Success</span>
+    <span class="text-secondary small">Empowering Education Partners</span>
+  </div>
 </footer>
 
 </div>
@@ -207,13 +200,9 @@ Aspiring Life Partners
 
 {% endblock %}
 
-
-<script src="{% static 'vendor/bootstrap.bundle.min.js' %}">
-</script>
-
-<script src="{% static 'js/app.js' %}?v=workspace-sky-1">
-</script>
-
+<script src="{% static 'vendor/bootstrap.bundle.min.js' %}"></script>
+<script src="{% static 'js/app.js' %}?v=teachermitra-5"></script>
 <script src="{% static 'js/education.js' %}?v=1"></script>
+{% block extra_scripts %}{% endblock %}
 </body>
 </html>

@@ -44,9 +44,10 @@ class AccountTests(TestCase):
                 User.objects.create_superuser("invalid@example.com", PASSWORD, **overrides)
 
     def test_dashboard_requires_login(self):
-        self.assertRedirects(self.client.get("/"), "/accounts/login/?next=/")
+        dashboard_url = reverse("dashboard:index")
+        self.assertRedirects(self.client.get(dashboard_url), f"/accounts/login/?next={dashboard_url}")
         self.client.force_login(self.worker)
-        response = self.client.get("/")
+        response = self.client.get(dashboard_url)
         self.assertContains(response, "Welcome, Worker")
         self.assertContains(response, "Today's follow-ups")
         self.assertContains(response, "Pending applications")
@@ -54,10 +55,10 @@ class AccountTests(TestCase):
 
     def test_login_and_post_logout(self):
         response = self.client.post(reverse("accounts:login"), {"username": "WORKER@example.com", "password": PASSWORD})
-        self.assertRedirects(response, "/")
+        self.assertRedirects(response, reverse("dashboard:index"))
         self.assertEqual(self.client.get(reverse("accounts:logout")).status_code, 405)
         self.assertRedirects(self.client.post(reverse("accounts:logout")), reverse("accounts:login"))
-        self.assertEqual(self.client.get("/").status_code, 302)
+        self.assertEqual(self.client.get(reverse("dashboard:index")).status_code, 302)
 
     def test_invalid_and_inactive_web_login(self):
         self.assertContains(self.client.post(reverse("accounts:login"), {"username": self.worker.email, "password": "bad"}), "Please enter a correct")
@@ -115,7 +116,7 @@ class AccountTests(TestCase):
     def test_deactivation_invalidates_session(self):
         self.client.force_login(self.worker)
         User.objects.filter(pk=self.worker.pk).update(is_active=False)
-        self.assertEqual(self.client.get("/").status_code, 302)
+        self.assertEqual(self.client.get(reverse("dashboard:index")).status_code, 302)
 
     def test_admin_user_pages(self):
         self.client.force_login(self.root)

@@ -105,7 +105,12 @@ class TagForm(forms.ModelForm):
 
 class LeadFilterForm(forms.Form):
     partner = forms.ModelChoiceField(queryset=None, to_field_name="partner_code", required=False, empty_label="All partners")
-    search = forms.CharField(required=False, max_length=200, label="Search name, phone or email")
+    search = forms.CharField(
+        required=False,
+        max_length=200,
+        label="Search",
+        widget=forms.SearchInput(attrs={"placeholder": "Name, phone or email", "autocomplete": "off"}),
+    )
     status = forms.ChoiceField(choices=[("", "All statuses"), *Lead.Status.choices], required=False)
     priority = forms.ChoiceField(choices=[("", "All priorities"), *Lead.Priority.choices], required=False)
     assigned_to = forms.ModelChoiceField(queryset=None, required=False, label="Counsellor", empty_label="All counsellors")

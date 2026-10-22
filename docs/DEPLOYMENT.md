@@ -6,6 +6,8 @@
 
 One Linux VPS: Nginx terminates TLS and serves static/profile files, Gunicorn serves Django WSGI on `127.0.0.1:8001`, PostgreSQL is local/private, and systemd supervises Gunicorn. No asynchronous business requirement was found. This avoids adding Docker/Redis/ASGI infrastructure without evidence it is needed. Capacity is unknown; start at two workers/two threads only after memory checks and measure before increasing.
 
+Dashboard charts load Chart.js 4 from jsDelivr. This is a browser-side runtime dependency; if the CDN is unavailable, dashboard totals and tables remain usable and chart areas show a fallback message. A deployment that requires fully offline operation should vendor the reviewed Chart.js distribution under `static/vendor/` and update the dashboard script references.
+
 Templates assume these deployment variables. Substitute **all** affected templates consistently if changed:
 
 | Variable | Template value |
@@ -128,7 +130,7 @@ CI runs SQLite and disposable PostgreSQL tests, production checks with ephemeral
 
 ## Git review and release commands (operator only)
 
-This checkout has no commits yet and substantial existing staged/untracked work. Review application changes as well as deployment files. First inspect without printing private .env/upload content:
+This repository contains an existing application commit and may include local working-tree changes. Review application changes as well as deployment files. Inspect status and diffs without printing private .env/upload content:
 
 ```powershell
 git status --short
@@ -136,13 +138,12 @@ git diff --stat
 git diff
 git diff --cached --stat
 git diff --cached
-git add --dry-run .
+git ls-files --others --exclude-standard
 ```
 
-Only after all required files and secret checks have been reviewed:
+After review, stage only the intended files by explicit path. Do not use `git add .` when local files may contain secrets, uploads, databases, or unrelated work. Then verify:
 
 ```powershell
-git add .
 git diff --cached --check
 git diff --cached --stat
 git diff --cached

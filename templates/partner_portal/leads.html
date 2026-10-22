@@ -7,7 +7,7 @@
 <a class="btn btn-primary" href="{% url 'partner-portal:submit' %}">+ Submit lead</a>
 </div>
 <section class="panel mb-4">
-<form method="get" class="lead-filters">{{ form.non_field_errors }}{% for field in form %}{% include 'partners/field.html' %}{% endfor %}<div>
+<form method="get" class="lead-filters">{{ form.non_field_errors }}{% for field in form %}{% include 'partners/field.html' %}{% endfor %}<div class="filter-actions">
 <button class="btn btn-primary">Apply filters</button> <a href="{% url 'partner-portal:leads' %}" class="btn btn-outline-secondary">Reset</a>
 </div>
 </form>

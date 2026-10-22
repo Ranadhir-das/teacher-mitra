@@ -11,12 +11,27 @@
 </div>
 <div class="d-flex gap-2">{% if is_admin %}<a class="btn btn-outline-secondary" href="{% url 'leads:tags' %}">Manage tags</a>{% endif %}{% if can_create %}<a class="btn btn-primary" href="{% url 'leads:create' %}">+ Add lead</a>{% endif %}</div>
 </div>
-<section class="panel mb-4">
-<form method="get" class="lead-filters">{{ filter_form.non_field_errors }}{% for field in filter_form %}<div class="field-row">
-<label for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}{{ field.errors }}</div>{% endfor %}<div class="d-flex align-items-end gap-2 pb-3">
-<button class="btn btn-primary" type="submit">Apply filters</button>
+<section class="panel lead-filter-panel mb-4">
+<div class="lead-filter-heading"><div><span class="filter-overline">FIND THE RIGHT RECORD</span><h2>Search and filter</h2><p>Start with a name, phone, or email. Add filters when you need a narrower view.</p></div><span class="filter-match-count">{{ page_obj.paginator.count }} result{{ page_obj.paginator.count|pluralize }}</span></div>
+<form method="get" class="lead-filter-form" role="search" aria-label="Search and filter {% if students %}students{% else %}leads{% endif %}">
+{{ filter_form.non_field_errors }}
+<div class="lead-filter-primary">
+<div class="field-row lead-search-field"><label for="{{ filter_form.search.id_for_label }}">Search</label>{{ filter_form.search }}{{ filter_form.search.errors }}</div>
+<div class="field-row lead-status-field"><label for="{{ filter_form.status.id_for_label }}">Status</label>{{ filter_form.status }}{{ filter_form.status.errors }}</div>
+<div class="filter-actions">
+<button class="btn btn-primary" type="submit">Search <span aria-hidden="true">→</span></button>
 <a class="btn btn-outline-secondary" href="{% if students %}{% url 'students' %}{% else %}{% url 'leads:list' %}{% endif %}">Reset</a>
+<a class="btn btn-outline-primary" href="{% url 'leads:export' %}{% if export_query %}?{{ export_query }}{% endif %}" download>
+<span aria-hidden="true">↓</span> Download CSV
+</a>
 </div>
+</div>
+<details class="lead-filter-advanced" {% if request.GET.partner or request.GET.priority or request.GET.assigned_to or request.GET.lead_source or request.GET.created_from or request.GET.created_to or request.GET.city or request.GET.state or request.GET.activity or request.GET.sort or request.GET.page_size %}open{% endif %}>
+<summary><span>More filters</span><span class="advanced-filter-hint">Counsellor, source, dates, location, and more</span></summary>
+<div class="lead-filters">
+{% for field in filter_form %}{% if field.name != 'search' and field.name != 'status' %}<div class="field-row"><label for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}{{ field.errors }}</div>{% endif %}{% endfor %}
+</div>
+</details>
 </form>
 </section>
 <section class="panel">

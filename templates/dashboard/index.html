@@ -1,80 +1,357 @@
-{% extends 'base.html' %}{% block title %}Dashboard{% endblock %}{% block content %}<div class="page-heading">
-<div>
-<span class="eyebrow">WORKSPACE OVERVIEW</span>
-<h1>Welcome, {{ user.get_short_name }}.</h1>
-<p>Your student journeys, with the next step in focus.</p>
+{% extends 'base.html' %}{% block title %}Dashboard{% endblock %}
+
+{% block extra_head %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="page-heading">
+  <div>
+    <span class="eyebrow">WORKSPACE OVERVIEW</span>
+    <h1>Welcome, {{ user.get_short_name }}.</h1>
+    <p>Your student journeys, with the next step in focus.</p>
+  </div>
+  <a class="btn btn-primary" href="{% url 'leads:list' %}">Open leads &rarr;</a>
 </div>
-<a class="btn btn-primary" href="{% url 'leads:list' %}">Open leads &rarr;</a>
+
+{# ── Date filter toolbar ── #}
+<div class="filter-toolbar mb-4">
+  <div class="filter-pills dashboard-period-filters" aria-label="Dashboard date range">
+    {% for key, label in period_choices %}
+    <a href="?period={{ key }}"
+       class="btn btn-sm {% if period == key %}btn-primary{% else %}btn-outline-secondary{% endif %}" {% if period == key %}aria-current="page"{% endif %}>
+      {{ label }}
+    </a>
+    {% endfor %}
+  </div>
+  <form class="filter-custom-range dashboard-date-filter" method="get" aria-label="Choose a custom date range">
+    <input type="hidden" name="period" value="custom">
+    <label class="visually-hidden" for="dash-start">Start date</label>
+    <input type="date" id="dash-start" name="start_date" class="form-control form-control-sm"
+           value="{{ start_date|date:'Y-m-d' }}" aria-label="Start date">
+    <span class="date-range-separator" aria-hidden="true">&ndash;</span>
+    <label class="visually-hidden" for="dash-end">End date</label>
+    <input type="date" id="dash-end" name="end_date" class="form-control form-control-sm"
+           value="{{ end_date|date:'Y-m-d' }}" aria-label="End date">
+    <button type="submit" class="btn btn-sm btn-outline-primary">Apply</button>
+  </form>
 </div>
-<div class="dashboard-shortcuts mb-4"><a href="{% url 'students' %}"><span aria-hidden="true">&#x1F393;</span> Students</a><a href="{% url 'leads:list' %}"><span aria-hidden="true">&#x1F4CB;</span> My leads</a>{% if can_manage_employees %}<a href="{% url 'partners:list' %}?status=PENDING"><span aria-hidden="true">&#x1F91D;</span> Partner approvals</a><a href="{% url 'accounts:employee-list' %}"><span aria-hidden="true">&#x1F465;</span> Manage team</a>{% endif %}</div>
-<section class="welcome-banner">
-<div>
-<span class="eyebrow">GUIDANCE THAT MAKES A DIFFERENCE</span>
-<h2>Every conversation.<br>A new possibility.</h2>
-<p>Your team, your students, and their next chapter.</p>{% if can_create_lead %}<a class="btn btn-light" href="{% url 'leads:create' %}">Add a lead &rarr;</a>{% else %}<a class="btn btn-light" href="{% url 'leads:list' %}">View your leads &rarr;</a>{% endif %}</div>
-<div class="banner-art" aria-hidden="true">
-<div class="orbit orbit-one">
-</div>
-<div class="orbit orbit-two">
-</div>
-<span>&#8599;</span>
-<small>GROW TOGETHER</small>
-</div>
+
+{# ── KPI cards ── #}
+<section class="metrics partner-metrics">
+  {% for card in cards %}{% include 'components/dashboard_card.html' with card=card %}{% endfor %}
 </section>
-<div class="section-heading">
-<h2><span aria-hidden="true">&#x1F4CA;</span> At a glance</h2>
-<span>Live data &middot; Active leads within your access</span>
-</div>
-<section class="metrics partner-metrics">{% for card in cards %}{% include 'components/dashboard_card.html' with card=card %}{% endfor %}</section>
-<div class="dashboard-bottom">
-<section class="panel">
-<div class="section-heading">
-<h2><span aria-hidden="true">&#x1F393;</span> Recent leads</h2>
-<a href="{% url 'leads:list' %}">View all</a>
-</div>
-<div class="table-responsive">
-<table class="table align-middle">
-<thead>
-<tr>
-<th>Student</th>
-<th>Status</th>
-<th>Counsellor</th>
-</tr>
-</thead>
-<tbody>{% for lead in recent_leads %}<tr>
-<td>
-<a href="{% url 'leads:detail' lead.pk %}">{{ lead.full_name }}</a>
-<small class="d-block text-secondary">{{ lead.desired_course|default:'Course undecided' }}</small>
-</td>
-<td>{% include 'leads/status_badge.html' %}</td>
-<td>{{ lead.assigned_counsellor.name|default:'Unassigned' }}</td>
-</tr>{% empty %}<tr>
-<td colspan="3">
-<div class="empty-state">
-<h3>Your next chapter starts here</h3>
-<p>No active leads in your workspace yet.</p>
-</div>
-</td>
-</tr>{% endfor %}</tbody>
-</table>
-</div>
+
+{# ── Extra KPI row: follow-ups, applications, conversion ── #}
+<section class="metrics metrics-secondary mt-3">
+  <article class="metric-card">
+    <div class="metric-card-header">
+      <span class="metric-label">Overdue follow-ups</span>
+      <div class="metric-icon-wrap" aria-hidden="true">
+        {% include "components/icon.html" with name="alert" class="metric-svg" %}
+      </div>
+    </div>
+    <div class="metric-card-body">
+      <strong class="metric-value">{{ overdue_followups }}</strong>
+    </div>
+    <small class="metric-note">Require immediate attention</small>
+  </article>
+  <article class="metric-card">
+    <div class="metric-card-header">
+      <span class="metric-label">Pending applications</span>
+      <div class="metric-icon-wrap" aria-hidden="true">
+        {% include "components/icon.html" with name="applications" class="metric-svg" %}
+      </div>
+    </div>
+    <div class="metric-card-body">
+      <strong class="metric-value">{{ pending_application_count }}</strong>
+    </div>
+    <small class="metric-note">Submitted or under review</small>
+  </article>
+  <article class="metric-card metric-card-primary">
+    <div class="metric-card-header">
+      <span class="metric-label">Conversion rate</span>
+      <div class="metric-icon-wrap" aria-hidden="true">
+        {% include "components/icon.html" with name="check" class="metric-svg" %}
+      </div>
+    </div>
+    <div class="metric-card-body">
+      <strong class="metric-value">{{ conversion_rate }}%</strong>
+    </div>
+    <small class="metric-note">Admissions / total leads</small>
+  </article>
 </section>
-<section class="panel">
-<h2><span aria-hidden="true">&#x1F4E1;</span> Top lead sources</h2>{% for source in sources %}<div class="source-row">
-<span>{{ source.label }}</span>
-<strong>{{ source.count }}</strong>
-</div>{% empty %}<p class="text-secondary mt-4">No source data yet.</p>{% endfor %}</section>
+
+{# ── Charts row 1: Status doughnut + Monthly trends ── #}
+<div class="dashboard-charts mt-4">
+  <section class="panel chart-panel">
+    <div class="dashboard-chart-heading"><div><span class="chart-kicker">PIPELINE</span><h2>Lead status distribution</h2></div><span class="chart-context">Selected date range</span></div>
+    <div class="chart-container">
+      <canvas id="statusDoughnut" role="img" aria-label="Lead distribution by status"></canvas>
+      <p class="chart-empty" hidden>No leads match this date range.</p>
+    </div>
+  </section>
+  <section class="panel chart-panel">
+    <div class="dashboard-chart-heading"><div><span class="chart-kicker">MOMENTUM</span><h2>Monthly performance</h2></div><span class="chart-context">Last 6 months</span></div>
+    <div class="chart-container">
+      <canvas id="monthlyTrend" role="img" aria-label="Monthly leads and confirmed admissions trend"></canvas>
+      <p class="chart-empty" hidden>No monthly activity to display.</p>
+    </div>
+  </section>
 </div>
+
+{# ── Charts row 2: Funnel + Sources ── #}
+<div class="dashboard-charts mt-4">
+  <section class="panel chart-panel">
+    <div class="dashboard-chart-heading"><div><span class="chart-kicker">JOURNEY</span><h2>Lead conversion funnel</h2></div></div>
+    <div class="funnel-viz">
+      {% for stage in funnel_stages %}
+      <div class="funnel-stage">
+      <div class="funnel-bar" aria-label="{{ stage.label }}: {{ stage.count }}">
+          <span class="funnel-bar-fill" style="width: {{ stage.percent }}%;"></span>
+        </div>
+        <div class="funnel-info">
+          <span class="funnel-label">{{ stage.label }}</span>
+          <strong>{{ stage.count }}</strong>
+          <span class="text-muted">({{ stage.percent }}%)</span>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </section>
+  <section class="panel chart-panel">
+    <div class="dashboard-chart-heading"><div><span class="chart-kicker">ACQUISITION</span><h2>Lead sources</h2></div><span class="chart-context">Top sources</span></div>
+    <div class="chart-container">
+      <canvas id="sourcesBar" role="img" aria-label="Lead count grouped by source"></canvas>
+      <p class="chart-empty" hidden>No source data to display.</p>
+    </div>
+  </section>
+</div>
+
+{# ── Pending actions (admin only) ── #}
+{% if pending_onboarding_count or pending_documents_count %}
 <section class="panel mt-4">
-<h2><span aria-hidden="true">&#x1F308;</span> Lead status distribution</h2>
-<div class="status-chart" role="img" aria-label="Current lead counts by status">{% for item in distribution %}<div class="chart-row">
-<span>{{ item.label }}</span>
-<div class="chart-track">
-<div class="chart-bar" style="width: {{ item.percent }}%">
-</div>
-</div>
-<strong>{{ item.count }}</strong>
-</div>{% empty %}<p class="text-secondary mt-3">No active lead data to display.</p>{% endfor %}</div>
+  <h2>
+    {% include "components/icon.html" with name="alert" class="section-icon" %}
+    Pending actions
+  </h2>
+  <div class="pending-actions-grid">
+    {% if pending_onboarding_count %}
+    <a href="{% url 'partners:list' %}?status=SUBMITTED" class="pending-action-card">
+      <strong>{{ pending_onboarding_count }}</strong>
+      <span>Partner onboarding{{ pending_onboarding_count|pluralize }} awaiting review</span>
+    </a>
+    {% endif %}
+    {% if pending_documents_count %}
+    <a href="{% url 'partners:list' %}?status=SUBMITTED" class="pending-action-card">
+      <strong>{{ pending_documents_count }}</strong>
+      <span>Document{{ pending_documents_count|pluralize }} pending verification</span>
+    </a>
+    {% endif %}
+  </div>
 </section>
+{% endif %}
+
+{# ── Recent leads + Top sources ── #}
+<div class="dashboard-bottom mt-4">
+  <section class="panel">
+    <div class="section-heading">
+      <h2>
+        {% include "components/icon.html" with name="leads" class="section-icon" %}
+        Recent leads
+      </h2>
+      <a href="{% url 'leads:list' %}">View all</a>
+    </div>
+    <div class="table-responsive">
+      <table class="table align-middle">
+        <thead>
+          <tr>
+            <th>Student</th>
+            <th>Status</th>
+            <th>Counsellor</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for lead in recent_leads %}
+          <tr>
+            <td>
+              <a href="{% url 'leads:detail' lead.pk %}">{{ lead.full_name }}</a>
+              <small class="d-block text-secondary">{{ lead.desired_course|default:'Course undecided' }}</small>
+            </td>
+            <td>{% include 'leads/status_badge.html' %}</td>
+            <td>{{ lead.assigned_counsellor.name|default:'Unassigned' }}</td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="3">
+              <div class="empty-state">
+                <h3>Your next chapter starts here</h3>
+                <p>No active leads in your workspace yet.</p>
+                {% if can_create_lead %}<a class="btn btn-primary" href="{% url 'leads:create' %}">Add a lead</a>{% endif %}
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2>
+      {% include "components/icon.html" with name="sources" class="section-icon" %}
+      Top lead sources
+    </h2>
+    {% for source in sources %}
+    <div class="source-row">
+      <span>{{ source.label }}</span>
+      <strong>{{ source.count }}</strong>
+    </div>
+    {% empty %}
+    <p class="text-secondary mt-4">No source data yet.</p>
+    {% endfor %}
+  </section>
+</div>
+
 {% if user.role == 'COUNSELLOR' %}{% include 'dashboard/counsellor_workload.html' %}{% endif %}
+
+{# ── Chart.js data injection & initialization ── #}
+{{ status_chart_data|json_script:"status-chart-data" }}
+{{ trend_chart_data|json_script:"trend-chart-data" }}
+{{ sources_data|json_script:"sources-chart-data" }}
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  if (typeof Chart === "undefined") {
+    document.querySelectorAll(".chart-container").forEach(function(container) {
+      var fallback = document.createElement("p");
+      fallback.className = "chart-fallback text-muted";
+      fallback.textContent = "Charts are unavailable. The figures remain available in the dashboard summaries.";
+      container.appendChild(fallback);
+    });
+    return;
+  }
+  var slicePalette = [
+    '#0284c7', '#0ea5e9', '#38bdf8', '#06b6d4',
+    '#10b981', '#f59e0b', '#8b5cf6', '#ec4899',
+    '#64748b', '#14b8a6', '#6366f1', '#f97316'
+  ];
+
+  function getData(id) {
+    var el = document.getElementById(id);
+    return el ? JSON.parse(el.textContent) : [];
+  }
+  function showEmpty(canvas) {
+    if (!canvas) return;
+    canvas.hidden = true;
+    var message = canvas.closest(".chart-container").querySelector(".chart-empty");
+    if (message) message.hidden = false;
+  }
+
+  /* Status Doughnut */
+  var statusData = getData("status-chart-data");
+  var statusEl = document.getElementById("statusDoughnut");
+  if (statusEl && statusData.length) {
+    new Chart(statusEl, {
+      type: "doughnut",
+      data: {
+        labels: statusData.map(function(d) { return d.label; }),
+        datasets: [{
+          data: statusData.map(function(d) { return d.value; }),
+          backgroundColor: slicePalette,
+          borderWidth: 3,
+          borderColor: '#fff'
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        cutout: '68%',
+        plugins: {
+          legend: { position: "bottom", labels: { padding: 14, usePointStyle: true, boxWidth: 8 } }
+        }
+      }
+    });
+  } else showEmpty(statusEl);
+
+  /* Monthly Trend */
+  var trendData = getData("trend-chart-data");
+  var trendEl = document.getElementById("monthlyTrend");
+  if (trendEl && trendData.labels && trendData.labels.length) {
+    new Chart(trendEl, {
+      type: "line",
+      data: {
+        labels: trendData.labels,
+        datasets: [
+          {
+            label: "Leads",
+            data: trendData.leads,
+            borderColor: "#0284c7",
+            backgroundColor: "rgba(2,132,199,.12)",
+            fill: true,
+            tension: .34,
+            pointRadius: 3,
+            pointHoverRadius: 5,
+            pointBackgroundColor: "#fff",
+            pointBorderWidth: 2
+          },
+          {
+            label: "Admissions",
+            data: trendData.admissions,
+            borderColor: "#10b981",
+            backgroundColor: "rgba(16,185,129,.08)",
+            fill: false,
+            tension: .34,
+            pointRadius: 3,
+            pointHoverRadius: 5,
+            pointBackgroundColor: "#fff",
+            pointBorderWidth: 2
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          x: { grid: { display: false } },
+          y: { beginAtZero: true, grid: { color: "#edf2f7" }, ticks: { precision: 0 } }
+        },
+        plugins: {
+          legend: { position: "bottom", labels: { usePointStyle: true, boxWidth: 8, padding: 15 } }
+        }
+      }
+    });
+  } else showEmpty(trendEl);
+
+  /* Sources Bar */
+  var sourcesData = getData("sources-chart-data");
+  var sourcesEl = document.getElementById("sourcesBar");
+  if (sourcesEl && sourcesData.length) {
+    new Chart(sourcesEl, {
+      type: "bar",
+      data: {
+        labels: sourcesData.map(function(d) { return d.label; }),
+        datasets: [{
+          label: "Leads",
+          data: sourcesData.map(function(d) { return d.count; }),
+          backgroundColor: "#0284c7",
+          borderRadius: 4
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        indexAxis: "y",
+        scales: {
+          x: { beginAtZero: true, ticks: { stepSize: 1 } },
+          y: { grid: { display: false } }
+        },
+        plugins: {
+          legend: { display: false }
+        }
+      }
+    });
+  } else showEmpty(sourcesEl);
+});
+</script>
 {% endblock %}

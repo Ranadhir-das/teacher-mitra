@@ -1,32 +1,158 @@
-{% extends 'partner_portal/base.html' %}{% block title %}Partner dashboard{% endblock %}{% block portal_content %}<div class="page-heading">
-<div>
-<span class="eyebrow">{{ partner.business_name }}</span>
-<h1><span aria-hidden="true">&#x1F3E0;</span> Welcome, {{ partner.contact_person }}.</h1>
-<p>Follow every referral, from first introduction to the next chapter.</p>
+{% extends 'partner_portal/base.html' %}{% block title %}Partner dashboard{% endblock %}
+
+{% block extra_head %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% endblock %}
+
+{% block portal_content %}
+<div class="page-heading">
+  <div>
+    <span class="eyebrow">{{ partner.business_name }}</span>
+    <h1>Welcome, {{ partner.contact_person }}.</h1>
+    <p>Follow every referral, from first introduction to the next chapter.</p>
+  </div>
+  <a class="btn btn-primary" href="{% url 'partner-portal:submit' %}">Add Student &rarr;</a>
 </div>
+
+{# ── Quick actions ── #}
+<div class="dashboard-shortcuts mb-4">
+  <a href="{% url 'partner-portal:submit' %}">
+    {% include "components/icon.html" with name="add" class="nav-icon" %}
+    New referral
+  </a>
+  <a href="{% url 'partner-portal:leads' %}">
+    {% include "components/icon.html" with name="leads" class="nav-icon" %}
+    My leads
+  </a>
+  <a href="{% url 'partner-portal:reports' %}">
+    {% include "components/icon.html" with name="reports" class="nav-icon" %}
+    Reports
+  </a>
+  <a href="{% url 'partner-portal:profile' %}">
+    {% include "components/icon.html" with name="profile" class="nav-icon" %}
+    Profile
+  </a>
 </div>
-<section class="welcome-banner">
-<div>
-<span class="eyebrow">GOOD GUIDANCE STARTS WITH A CONNECTION</span>
-<h2><span aria-hidden="true">&#x1F3E0;</span> Introduce a student.<br>Open a world of possibility.</h2>
-<p>Share their requirements. Our team will guide the next steps.</p>
-<a class="btn btn-light" href="{% url 'partner-portal:submit' %}">Add Student &rarr;</a>
-</div>
-<div class="banner-art" aria-hidden="true">
-<div class="orbit orbit-one">
-</div>
-<div class="orbit orbit-two">
-</div>
-<span>&#8599;</span>
-</div>
-</section>
+
+{# ── KPI cards ── #}
 <div class="section-heading">
-<h2><span aria-hidden="true">&#x1F3E0;</span> Your referrals at a glance</h2>
-<span>Live progress from your submitted leads</span>
+  <h2>Your referrals at a glance</h2>
+  <span>Live progress from your submitted leads</span>
 </div>
-<p><a href="{% url 'partner-portal:reports' %}">Explore your reports &rarr;</a></p><section class="metrics partner-metrics">{% for card in cards %}{% include 'components/dashboard_card.html' %}{% endfor %}</section>
+<section class="metrics partner-metrics">
+  {% for card in cards %}{% include 'components/dashboard_card.html' %}{% endfor %}
+</section>
+
+{# ── Charts row ── #}
+{% if chart_status_data %}
+<div class="dashboard-charts mt-4">
+  <section class="panel chart-panel">
+    <h2>Referral status</h2>
+    <div class="chart-container" style="height:280px;">
+      <canvas id="partnerStatusChart"></canvas>
+    </div>
+  </section>
+  <section class="panel chart-panel">
+    <h2>30-day referral trend</h2>
+    <div class="chart-container" style="height:280px;">
+      <canvas id="partnerTrendChart"></canvas>
+    </div>
+  </section>
+</div>
+{% endif %}
+
+{# ── Recent referrals ── #}
 <section class="panel mt-4">
-<div class="section-heading mb-3">
-<h2><span aria-hidden="true">&#x1F3E0;</span> Recent referrals</h2>
-<a href="{% url 'partner-portal:leads' %}">View all</a>
-</div>{% include 'partner_portal/table.html' with leads=recent_leads %}</section>{% endblock %}
+  <div class="section-heading mb-3">
+    <h2>Recent referrals</h2>
+    <a href="{% url 'partner-portal:leads' %}">View all</a>
+  </div>
+  {% include 'partner_portal/table.html' with leads=recent_leads %}
+</section>
+
+{# ── Chart data injection ── #}
+{% if chart_status_data %}
+{{ chart_status_data|json_script:"partner-status-data" }}
+{{ chart_trend_data|json_script:"partner-trend-data" }}
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  if (typeof Chart === "undefined") {
+    document.querySelectorAll(".chart-container").forEach(function(container) {
+      var fallback = document.createElement("p");
+      fallback.className = "chart-fallback text-muted";
+      fallback.textContent = "Charts are unavailable. Your referral totals remain available above.";
+      container.appendChild(fallback);
+    });
+    return;
+  }
+  var palette = ['#0284c7', '#0ea5e9', '#38bdf8', '#06b6d4', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899', '#64748b'];
+
+  function getData(id) {
+    var el = document.getElementById(id);
+    return el ? JSON.parse(el.textContent) : [];
+  }
+
+  /* Referral Status Doughnut */
+  var statusData = getData("partner-status-data");
+  var statusEl = document.getElementById("partnerStatusChart");
+  if (statusEl && statusData.length) {
+    new Chart(statusEl, {
+      type: "doughnut",
+      data: {
+        labels: statusData.map(function(d) { return d.label; }),
+        datasets: [{
+          data: statusData.map(function(d) { return d.value; }),
+          backgroundColor: palette,
+          borderWidth: 2,
+          borderColor: '#fff'
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        cutout: '60%',
+        plugins: {
+          legend: { position: "right", labels: { padding: 10, usePointStyle: true } }
+        }
+      }
+    });
+  }
+
+  /* 30-day Trend */
+  var trendData = getData("partner-trend-data");
+  var trendEl = document.getElementById("partnerTrendChart");
+  if (trendEl && trendData.labels && trendData.labels.length) {
+    new Chart(trendEl, {
+      type: "line",
+      data: {
+        labels: trendData.labels,
+        datasets: [{
+          label: "Referrals",
+          data: trendData.values,
+          borderColor: "#0284c7",
+          backgroundColor: "rgba(2,132,199,0.1)",
+          fill: true,
+          tension: 0.3,
+          pointRadius: 2,
+          pointHoverRadius: 5
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          x: {
+            grid: { display: false },
+            ticks: { maxTicksLimit: 10, maxRotation: 0 }
+          },
+          y: { beginAtZero: true, ticks: { stepSize: 1 } }
+        },
+        plugins: { legend: { display: false } }
+      }
+    });
+  }
+});
+</script>
+{% endif %}
+{% endblock %}

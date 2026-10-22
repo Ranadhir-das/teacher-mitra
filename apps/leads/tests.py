@@ -341,12 +341,31 @@ class LeadTestCase(TestCase):
     def test_dashboard_and_students_are_scoped(self):
         services.change_status(self.admin, self.other.pk, "ADMISSION_CONFIRMED")
         self.client.force_login(self.c1)
-        response = self.client.get("/")
+        response = self.client.get(reverse("dashboard:index"))
         self.assertEqual(response.context["cards"][0]["value"], 1)
         self.assertNotContains(response, self.other.full_name)
         self.assertEqual(self.client.get("/students/").context["page_obj"].paginator.count, 0)
         self.client.force_login(self.admin)
         self.assertEqual(self.client.get("/students/").context["page_obj"].paginator.count, 1)
+
+    def test_csv_export_is_authenticated_scoped_and_formula_safe(self):
+        from django.utils.http import urlencode
+
+        url = reverse("leads:export")
+        self.assertEqual(self.client.get(url).status_code, 302)
+        self.client.force_login(self.leader)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response["Cache-Control"], "private, no-store")
+        body = b"".join(response.streaming_content).decode("utf-8-sig")
+        self.assertIn("First Student", body)
+        self.assertNotIn("Private Student", body)
+
+        self.client.force_login(self.admin)
+        Lead.objects.filter(pk=self.own.pk).update(full_name=" \t=1+1")
+        response = self.client.get(url + "?" + urlencode({"search": "=1+1"}))
+        body = b"".join(response.streaming_content).decode("utf-8-sig")
+        self.assertIn("' \t=1+1", body)
 
     def test_admin_is_read_only_for_audited_models(self):
         self.client.force_login(self.root)

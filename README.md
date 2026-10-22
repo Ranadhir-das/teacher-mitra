@@ -141,7 +141,8 @@ Employees can be listed, searched, paginated, viewed, created, edited and activa
 
 | URL | Purpose |
 | --- | --- |
-| `/` | Protected dashboard |
+| `/` | Public TeacherMitra landing page |
+| `/workspace/` | Protected dashboard |
 | `/accounts/login/` | Session sign-in |
 | `/accounts/logout/` | POST session logout |
 | `/accounts/employees/` | Employee directory and search |

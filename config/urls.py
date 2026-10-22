@@ -4,6 +4,7 @@ from django.contrib import admin
 from django.urls import include, path
 from apps.leads.views import lead_list
 from .views import health, ready
+from apps.dashboard.views import landing
 
 handler403 = "config.views.access_denied"
 
@@ -22,6 +23,7 @@ urlpatterns = [
     path("partners/", include("apps.partners.urls")),
     path("partner/", include("apps.partners.portal_urls")),
     path("students/", lead_list, {"students": True}, name="students"),
+    path("", landing, name="landing"),
     path("", include("apps.dashboard.urls")),
     path("followups/", include("apps.followups.urls")),
     path("reports/", include("apps.reports.urls")),

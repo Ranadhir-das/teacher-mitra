@@ -1,4 +1,75 @@
-{% extends 'partner_portal/base.html' %}{% block title %}Onboarding{% endblock %}{% block portal_content %}<div class="page-heading"><div><h1>&#x1F4CB; Partner onboarding</h1><p>{{ partner.get_status_display }} &middot; {{ progress.percent }}% complete</p></div></div>{% if partner.review_feedback %}<div class="alert alert-info">{{ partner.review_feedback|linebreaksbr }}</div>{% endif %}
-<section class="panel mb-4"><h2>Business / personal information</h2><p>PAN/GST details are required when applicable. Explain any non-applicability for administrator review.</p><form method="post">{% csrf_token %}{{ form.non_field_errors }}<fieldset {% if not can_edit %}disabled{% endif %}><div class="lead-form-grid">{% for field in form %}{% include 'partners/field.html' %}{% endfor %}</div>{% if can_edit %}<button type="submit" class="btn btn-primary">Save and continue later</button>{% endif %}</fieldset></form></section>
-<section class="panel mb-4"><h2>&#x1F4C4; Required documents</h2><ul>{% for item in progress.requirements %}<li>{{ item.label }} &mdash; {% if item.document %}{{ item.document.get_status_display }}{% else %}Missing{% endif %}</li>{% endfor %}</ul>{% for document in documents %}<div class="border-top py-3"><a href="{% url 'partner-portal:onboarding-file' document.pk %}">{{ document.get_document_type_display }}: {{ document.original_name }}</a><span class="soft-badge ms-2">{{ document.get_status_display }}</span>{% if document.rejection_reason %}<p class="text-danger">{{ document.rejection_reason }}</p>{% endif %}</div>{% endfor %}{% if can_edit %}<form method="post" enctype="multipart/form-data" action="{% url 'partner-portal:onboarding-upload' %}">{% csrf_token %}{% for field in upload_form %}{% include 'partners/field.html' %}{% endfor %}<button type="submit" class="btn btn-outline-primary">Upload / replace document</button></form>{% endif %}</section>
-{% if can_edit %}<section class="panel"><h2>Submit for review</h2>{% if progress.missing_fields %}<p>Complete: {{ progress.missing_fields|join:', ' }}</p>{% endif %}<p>Save your information before submitting. Submission locks editing until the administrator requests changes.</p><form method="post" action="{% url 'partner-portal:onboarding-submit' %}">{% csrf_token %}<button type="submit" class="btn btn-success" {% if not progress.complete %}disabled{% endif %}>Submit onboarding</button></form></section>{% endif %}{% endblock %}
+{% extends 'partner_portal/base.html' %}
+{% block title %}Partner onboarding{% endblock %}
+{% block portal_content %}
+<div class="page-heading">
+  <div><span class="eyebrow">PARTNER SETUP</span><h1>Partner onboarding</h1><p>Save your progress as you complete each step.</p></div>
+  <span class="badge-status status-{{ partner.status|lower }}"><span class="badge-dot" aria-hidden="true"></span>{{ partner.get_status_display }}</span>
+</div>
+
+<nav class="onboarding-steps mb-4" aria-label="Onboarding steps">
+  <a href="#profile-step" class="onboarding-step"><span>1</span><span>Profile details</span></a>
+  <a href="#documents-step" class="onboarding-step"><span>2</span><span>Documents</span></a>
+  <a href="#review-step" class="onboarding-step"><span>3</span><span>Review &amp; submit</span></a>
+</nav>
+
+<section class="panel onboarding-progress-panel mb-4">
+  <div class="onboarding-progress-header"><h2>Completion</h2><span class="progress-percent">{{ progress.percent }}%</span></div>
+  <div class="progress my-3" role="progressbar" aria-label="Onboarding completion" aria-valuenow="{{ progress.percent }}" aria-valuemin="0" aria-valuemax="100">
+    <div class="progress-bar" style="width:{{ progress.percent }}%">{{ progress.percent }}%</div>
+  </div>
+  {% if partner.review_feedback %}<div class="alert alert-info mb-0"><strong>Administrator feedback</strong><br>{{ partner.review_feedback|linebreaksbr }}</div>{% endif %}
+  {% if partner.status == 'SUBMITTED' %}<p class="mb-0">Your application is being reviewed. Profile changes and document uploads are temporarily locked.</p>
+  {% elif partner.status == 'REJECTED' %}<p class="mb-0">Your application was rejected. Contact the administrator if you need help with the decision.</p>
+  {% elif partner.status == 'CHANGES_REQUIRED' %}<p class="mb-0">Update the requested information, then submit your application again.</p>{% endif %}
+</section>
+
+<section class="panel mb-4" id="profile-step">
+  <h2>1. Profile details</h2>
+  <p class="text-muted">Provide your contact, business and applicable tax information. Requirements depend on your partner type and tax selection.</p>
+  <form method="post">{% csrf_token %}{{ form.non_field_errors }}
+    <fieldset {% if not can_edit %}disabled{% endif %}>
+      <div class="lead-form-grid">{% for field in form %}{% include 'partners/field.html' %}{% endfor %}</div>
+      {% if can_edit %}<button type="submit" class="btn btn-primary">Save and continue later</button>{% endif %}
+    </fieldset>
+  </form>
+</section>
+
+<section class="panel mb-4" id="documents-step">
+  <h2>2. Required documents</h2>
+  <p class="text-muted">Upload PDF, PNG or JPEG files up to 10 MB each. Files are stored privately and only available to you and authorized reviewers.</p>
+  <div class="onboarding-checklist">
+    {% for item in progress.requirements %}
+    <div class="onboarding-document-row">
+      <div><strong>{{ item.label }}</strong>
+        {% if item.document %}<span class="badge-status status-{{ item.document.status|lower }}"><span class="badge-dot" aria-hidden="true"></span>{{ item.document.get_status_display }}</span>
+        {% else %}<span class="badge-status status-missing">Not uploaded</span>{% endif %}
+      </div>
+      {% if item.document and item.document.file %}<div class="small text-muted">{{ item.document.original_name }}{% if item.document.size %} &middot; {{ item.document.size|filesizeformat }}{% endif %}</div>{% endif %}
+      {% if item.document.rejection_reason %}<div class="text-danger small">Reviewer feedback: {{ item.document.rejection_reason|linebreaksbr }}</div>{% endif %}
+    </div>
+    {% endfor %}
+  </div>
+  {% if can_edit %}<form method="post" enctype="multipart/form-data" action="{% url 'partner-portal:onboarding-upload' %}" class="mt-3">{% csrf_token %}{{ upload_form.non_field_errors }}
+    {% for field in upload_form %}{% include 'partners/field.html' %}{% endfor %}
+    <button type="submit" class="btn btn-outline-primary">Upload or replace document</button>
+  </form>{% endif %}
+</section>
+
+<section class="panel" id="review-step">
+  <h2>3. Review &amp; submit</h2>
+  <p>Review your saved profile and document checklist before sending the application to an administrator.</p>
+  <dl class="detail-grid onboarding-review-summary">
+    <div><dt>Business or partner name</dt><dd>{{ partner.business_name }}</dd></div>
+    <div><dt>Contact person</dt><dd>{{ partner.contact_person }}</dd></div>
+    <div><dt>Email</dt><dd>{{ partner.email }}</dd></div>
+    <div><dt>Phone</dt><dd>{{ partner.phone }}</dd></div>
+    <div><dt>Partner type</dt><dd>{{ partner.get_partner_type_display }}</dd></div>
+    <div><dt>Tax information</dt><dd>{{ partner.get_tax_type_display|default:'Not provided' }}{% if partner.tax_identifier %} &middot; {{ partner.tax_identifier }}{% endif %}</dd></div>
+  </dl>
+  {% if progress.missing_fields %}<p><strong>Fields to complete:</strong> {{ progress.missing_fields|join:', ' }}</p>{% endif %}
+  {% if progress.missing_documents %}<p><strong>Documents to upload or replace:</strong> {{ progress.missing_documents|join:', ' }}</p>{% endif %}
+  {% if can_edit %}<form method="post" action="{% url 'partner-portal:onboarding-submit' %}" data-no-busy>{% csrf_token %}
+    <button type="submit" class="btn btn-success" {% if not progress.complete %}disabled{% endif %}>Submit onboarding for review</button>
+  </form>{% elif partner.status == 'SUBMITTED' %}<p class="mb-0">Submitted for administrator review.</p>{% endif %}
+</section>
+{% endblock %}

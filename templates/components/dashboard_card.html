@@ -1,5 +1,24 @@
-<article class="metric-card">
-<span>{{ card.label }}</span>
-<strong>{{ card.value }}</strong>
-<small>{{ card.note }}</small>
+<article class="metric-card {% if card.variant %}metric-card-{{ card.variant }}{% endif %}">
+    <div class="metric-card-header">
+        <span class="metric-label">{{ card.label }}</span>
+        {% if card.icon %}
+        <div class="metric-icon-wrap" aria-hidden="true">
+            {% include "components/icon.html" with name=card.icon class="metric-svg" %}
+        </div>
+        {% endif %}
+    </div>
+    <div class="metric-card-body">
+        <strong class="metric-value">{{ card.value }}</strong>
+        {% if card.trend %}
+        <span class="metric-trend {% if card.trend_up %}trend-up{% elif card.trend_down %}trend-down{% endif %}">
+            {{ card.trend }}
+        </span>
+        {% endif %}
+    </div>
+    {% if card.note %}
+    <small class="metric-note">{{ card.note }}</small>
+    {% endif %}
+    {% if card.url %}
+    <a href="{{ card.url }}" class="stretched-link" aria-label="View {{ card.label }}"></a>
+    {% endif %}
 </article>

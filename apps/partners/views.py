@@ -94,8 +94,38 @@ def portal_dashboard(request):
         from .onboarding import progress
         return render(request, "partner_portal/limited.html", {"partner": request.partner, "progress": progress(request.partner)})
     queryset = request.partner.leads.all()
-    return render(request, "partner_portal/dashboard.html", {"partner": request.partner,
-        "cards": portal_cards(queryset), "recent_leads": decorate_leads(list(queryset[:5]))})
+
+    # Chart data: status doughnut
+    from django.db.models import Count
+    from .statuses import PUBLIC_STATUSES
+    counts = dict(queryset.order_by().values_list("status").annotate(total=Count("id")))
+    chart_status_data = []
+    for code, (label, statuses) in PUBLIC_STATUSES.items():
+        value = sum(counts.get(s, 0) for s in statuses)
+        if value:
+            chart_status_data.append({"label": label, "value": value})
+
+    # Chart data: 30-day trend
+    from datetime import timedelta
+    from django.db.models.functions import TruncDate
+    from django.utils import timezone
+    today = timezone.localdate()
+    start = today - timedelta(days=29)
+    daily = dict(
+        queryset.filter(created_at__date__gte=start, created_at__date__lte=today)
+        .order_by().annotate(day=TruncDate("created_at"))
+        .values_list("day").annotate(total=Count("pk"))
+    )
+    trend_labels = [(start + timedelta(days=i)).strftime("%d %b") for i in range(30)]
+    trend_values = [daily.get(start + timedelta(days=i), 0) for i in range(30)]
+
+    return render(request, "partner_portal/dashboard.html", {
+        "partner": request.partner,
+        "cards": portal_cards(queryset),
+        "recent_leads": decorate_leads(list(queryset[:5])),
+        "chart_status_data": chart_status_data,
+        "chart_trend_data": {"labels": trend_labels, "values": trend_values},
+    })
 
 
 @partner_required

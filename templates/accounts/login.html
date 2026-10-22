@@ -3,10 +3,8 @@
 {% block body %}<main class="login-page">
 <section class="login-story">
 <a class="brand" href="{% url 'accounts:login' %}">
-<span class="brand-mark">alp</span>
-<span>Aspiring<br>
-<strong>Life Partners</strong>
-</span>
+<span class="brand-mark" aria-hidden="true"><span class="brand-mark-letter">TM</span></span>
+<span class="brand-text"><span class="brand-title">TeacherMitra</span><span class="brand-subtitle">Education CRM</span></span>
 </a>
 <div>
 <span class="eyebrow">EDUCATION. OPPORTUNITY. POSSIBILITY.</span>
@@ -16,7 +14,7 @@
 <p>A connected workspace for the people helping students take their next big step.</p>
 <div class="story-line">
 </div>
-<small>ASPIRING LIFE PARTNERS &middot; CONSULTANCY CRM</small>
+<small>TEACHERMITRA &middot; EDUCATION CRM</small>
 </div>
 <small>Your people. Your purpose. One workspace.</small>
 </section>
@@ -24,7 +22,7 @@
 <div class="login-form">
 <span class="eyebrow text-primary">YOUR WORKSPACE AWAITS</span>
 <h2>Welcome back.</h2>
-<p class="text-secondary mb-4">Sign in to Aspiring Life Partners.</p>{% include 'components/messages.html' %}<form method="post">{% csrf_token %}{{ form.non_field_errors }}{% for field in form %}<div class="field-row">
+<p class="text-secondary mb-4">Sign in to TeacherMitra.</p>{% include 'components/messages.html' %}<form method="post">{% csrf_token %}{{ form.non_field_errors }}{% for field in form %}<div class="field-row">
 <label for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}{{ field.errors }}</div>{% endfor %}{% if next %}<input type="hidden" name="next" value="{{ next }}">{% endif %}<button class="btn btn-primary w-100 py-3 mt-2" type="submit">Sign in to workspace <span aria-hidden="true">&#8599;</span>
 </button>
 </form>
